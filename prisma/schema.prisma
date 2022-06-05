@@ -57,6 +57,62 @@ model UserAddress {
   @@map("user_address")
 }
 
+model Ong {
+  id        String     @id @default(uuid())
+  name      String     @db.VarChar(80)
+  email     String     @unique @db.VarChar(50)
+  password  String     @db.VarChar(100)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  ongPersonalData OngPersonalData[]
+  ongAddress      OngAddress[]
+
+  @@map("ongs")
+}
+
+model OngPersonalData {
+  id          String    @id @default(uuid())
+  ongId       String    @unique
+  document    String    @unique @db.VarChar(11)
+  description String    @db.VarChar(200)
+  phone       String?   @db.VarChar(10)
+  telephone   String    @db.VarChar(11)
+  website     String?   @db.VarChar(50)
+  facebook    String?   @db.VarChar(50)
+  instagram   String?   @db.VarChar(50)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  ong Ong @relation(fields: [ongId], references: [id])
+
+  @@map("ong_personal_data")
+}
+
+model OngAddress {
+  id           String    @id @default(uuid())
+  ongId        String    @unique
+  zipCode      String    @db.VarChar(8)
+  street       String    @db.VarChar(50)
+  number       String    @db.VarChar(10)
+  complement   String?   @db.VarChar(50)
+  neighborhood String    @db.VarChar(50)
+  city         String    @db.VarChar(50)
+  state        String    @db.VarChar(2)
+  latitude     Decimal?  @db.Decimal(10, 6)
+  longitude    Decimal?  @db.Decimal(10, 6)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  ong Ong @relation(fields: [ongId], references: [id])
+
+  @@map("ong_address")
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE
