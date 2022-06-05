@@ -229,9 +229,6 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
     throw new Error("User is not active");
   }
 
-  console.log('user: ', user);
-  console.log('data.address: ',  data.address);
-
   if (telephoneUnmask(data.telephone as string) === user.userPersonalData?.telephone &&
       cepUnmask(data.address?.zipCode as string) === user.userAddress?.zipCode &&
       data.address?.street === user.userAddress?.street &&
