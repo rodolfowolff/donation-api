@@ -12,6 +12,16 @@ interface IUserAddress {
   state: string;
 }
 
+interface IUserAddressUpdate {
+  zipCode?: string | null;
+  street?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  neighborhood?: string  | null;
+  city?: string | null;
+  state?: string | null;
+}
+
 export interface IUser {
   firstName: string;
   lastName: string;
@@ -26,7 +36,7 @@ export interface IUser {
 
 export interface IUserUpdate {
   telephone?: string | null;
-  address: IUserAddress;
+  address?: IUserAddressUpdate | null;
 }
 
 export const createUser = async (req: Request, res: Response) => {

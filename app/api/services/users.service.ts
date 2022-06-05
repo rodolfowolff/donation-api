@@ -229,6 +229,20 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
     throw new Error("User is not active");
   }
 
+  console.log('user: ', user);
+  console.log('data.address: ',  data.address);
+
+  if (telephoneUnmask(data.telephone as string) === user.userPersonalData?.telephone &&
+      cepUnmask(data.address?.zipCode as string) === user.userAddress?.zipCode &&
+      data.address?.street === user.userAddress?.street &&
+      data.address?.number === user.userAddress?.number &&
+      data.address?.complement === user.userAddress?.complement &&
+      data.address?.neighborhood === user.userAddress?.neighborhood &&
+      data.address?.city === user.userAddress?.city &&
+      data.address?.state === user.userAddress?.state) {
+    throw new Error("Address not changed");
+  }
+
   await prisma.user.update({
     where: {
       id: id,
@@ -236,14 +250,35 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
     data: {
       userPersonalData: {
         update: {
-          telephone: data.telephone !== "" && data.telephone !== user.userPersonalData?.telephone ? telephoneUnmask(data.telephone || "") : user.userPersonalData?.telephone,
-        }
+          telephone: data.telephone === "" || telephoneUnmask(data.telephone as string) === user.userPersonalData?.telephone 
+          ? null
+          : telephoneUnmask(data.telephone as string),
+        } as any,
       },
       userAddress: {
         update: {
-          ...data.address,
-          zipCode: data.address.zipCode !== "" && data.address.zipCode !== user.userAddress?.zipCode ? cepUnmask(data.address.zipCode || "") : user.userAddress?.zipCode,
-        }
+          zipCode: data.address?.zipCode === "" || cepUnmask(data.address?.zipCode as string) === user.userAddress?.zipCode 
+            ? undefined
+            : cepUnmask(data.address?.zipCode as string),
+          street: data.address?.street === "" || data.address?.street === user.userAddress?.street 
+            ? undefined
+            : data.address?.street,
+          number: data.address?.number === "" || data.address?.number === user.userAddress?.number 
+            ? undefined
+            : data.address?.number,
+          complement: data.address?.complement === "" || data.address?.complement === user.userAddress?.complement 
+            ? undefined
+            : data.address?.complement,
+          neighborhood: data.address?.neighborhood === "" || data.address?.neighborhood === user.userAddress?.neighborhood 
+            ? undefined
+            : data.address?.neighborhood,
+          city: data.address?.city === "" || data.address?.city === user.userAddress?.city 
+            ? undefined
+            : data.address?.city,
+          state: data.address?.state === "" || data.address?.state === user.userAddress?.state 
+            ? undefined
+            : data.address?.state,
+        } as any,
       }
     }
   });
