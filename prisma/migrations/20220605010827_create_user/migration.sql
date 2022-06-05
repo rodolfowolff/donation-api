@@ -49,6 +49,9 @@ CREATE TABLE "user_address" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "user_personal_data_document" ON "user_personal_data"("document");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "user_personal_data_userId_key" ON "user_personal_data"("userId");
 
 -- CreateIndex

@@ -5,50 +5,43 @@ import { IUser } from "@/api/controllers/users.controller";
 
 export const createUser = async (data: IUser) => {
   if (!data.firstName || !data.lastName || !data.email || !data.password) {
-   return {
-      message: "Missing required fields",
-      status: 400,
-    };
+    throw new Error("Missing required fields");
   }
 
-  // TODO: Create function to check data for validations (email, password, etc)
+  // TODO: Create function to check data for validations (email, password, address, etc)
 
   if (data.firstName.length < 3 || 
       data.firstName.length > 20 || 
       data.lastName.length < 3 || 
       data.lastName.length > 20) {
-    return {
-      message: "First and last name must be at least 3 characters and at most 50 characters",
-      status: 400,
-    };
+        throw new Error("First and last name must be at least 3 characters and at most 20 characters");
   }
 
   if (!data.email.includes("@") || !data.email.includes(".") || data.email.length < 5 || data.email.length > 50) {
-    return {
-      message: "Email must be valid and at least 5 characters and at most 50 characters",
-      status: 400,
-    };
+    throw new Error("Email must be valid and at least 5 characters and at most 50 characters");
   }
 
   if (data.password.length < 8 || data.password.length > 20) {
-    return {
-      message: "Password must be at least 8 characters and less than 20 characters",
-      status: 400,
-    };
+    throw new Error("Password must be at least 8 characters and less than 20 characters");
   }
 
   const verifyIfUserExists = await prisma.user.findFirst({
     where: {
-      email: data.email
+      OR: [
+        { email: data.email },
+        { 
+          userPersonalData: {
+            document: data.document 
+          }
+        }
+      ]
     }
   });
 
   if (verifyIfUserExists) {
-    return {
-      message: "User already exists",
-      status: 400,
-    };
+    throw new Error("User already exists");
   }
+
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const documentUnmasked = cpfCnpjUnmask(data.document);
@@ -84,7 +77,6 @@ export const createUser = async (data: IUser) => {
 
   return {
     message: "User created successfully",
-    status: 201,
   }
 }
 
@@ -105,12 +97,7 @@ export const findAllUsers = async () => {
 }
 
 export const findUserById = async (id: string) => {
-  if (id.length < 36) {
-    return {
-      message: "Invalid id",
-      status: 400,
-    };
-  }
+  if (id.length < 36) throw new Error("Invalid id");
 
   const user = await prisma.user.findFirst({
     where: {
@@ -125,12 +112,7 @@ export const findUserById = async (id: string) => {
     }
   });
 
-  if (!user) {
-    return {
-      message: "User not found",
-      status: 404,
-    };
-  }
+  if (!user) throw new Error("User not found");
 
   return user;
 }

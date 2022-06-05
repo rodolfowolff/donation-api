@@ -28,10 +28,11 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const createdUser = await services.createUser(data);
     res.status(201).json(createdUser);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating user: ', error);
-    res.status(500).send({
-      message: "Error creating user",
+    res.status(500).json({
+      message: 'Error creating user',
+      error: error.message,
     });
   }
 }
@@ -40,10 +41,11 @@ export const findAllUsers = async (_req: Request, res: Response) => {
   try {
     const users = await services.findAllUsers();
     res.status(200).json(users);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error find all user: ', error);
-    res.status(500).send({
+    res.status(500).json({
       message: "Error find all user",
+      error: error.message,
     });
   }
 }
@@ -54,10 +56,11 @@ export const findUserById = async (req: Request, res: Response) => {
   try {
     const user = await services.findUserById(id);
     res.status(200).json(user);
-  } catch (error) {
-    console.error('User not found: ', error);
-    res.status(500).send({
-      message: 'User not found',
+  } catch (error : any) {
+    console.error('Error find user by id: ', error);
+    res.status(500).json({
+      message: 'Error find user by id',
+      error: error.message,
     });
   }
 }
