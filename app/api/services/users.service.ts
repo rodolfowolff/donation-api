@@ -1,31 +1,31 @@
 import { prisma } from "@/database/prismaClient";
 import { IUser } from "@/api/controllers/users.controller";
 
-export const createUser = async ({name, email, password}: IUser) => {
-  if (!name || !email || !password) {
+export const createUser = async ({firstName, lastName, email, password}: IUser) => {
+  if (!firstName || lastName || !email || !password) {
    return {
       message: "Missing required fields",
       status: 400,
     };
   }
 
-  if (name.length < 3) {
+  if (firstName.length < 3 || firstName.length > 20 || lastName.length < 3 || lastName.length > 20) {
     return {
-      message: "Name must be at least 3 characters",
+      message: "First and last name must be at least 3 characters and at most 50 characters",
       status: 400,
     };
   }
 
-  if (!email.includes("@")) {
+  if (!email.includes("@") || !email.includes(".") || email.length < 5 || email.length > 50) {
     return {
-      message: "Email must be valid",
+      message: "Email must be valid and at least 5 characters and at most 50 characters",
       status: 400,
     };
   }
 
-  if (password.length < 8) {
+  if (password.length < 8 || password.length > 20) {
     return {
-      message: "Password must be at least 8 characters",
+      message: "Password must be at least 8 characters and less than 20 characters",
       status: 400,
     };
   }

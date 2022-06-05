@@ -8,14 +8,51 @@ datasource db {
 }
 
 model User {
+  id               String            @id @default(uuid())
+  firstName        String            @db.VarChar(20)
+  lastName         String            @db.VarChar(20)
+  email            String            @unique @db.VarChar(50)
+  password         String            @db.VarChar(20)
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+  userPersonalData UserPersonalData?
+  userAddress      UserAddress?
+
+  @@map("users")
+}
+
+model UserPersonalData {
   id        String    @id @default(uuid())
-  name      String    @db.VarChar(255)
-  email     String    @unique @db.VarChar(255)
-  password  String    @db.VarChar(255)
-  active    Boolean   @default(true)
+  userId    String    @unique
+  document  String    @db.VarChar(11)
+  birthDate String    @db.VarChar(10)
+  telephone String    @db.VarChar(11)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@map("users")
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("user_personal_data")
+}
+
+model UserAddress {
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  zipCode    String    @db.VarChar(8)
+  address    String    @db.VarChar(100)
+  street     String    @db.VarChar(50)
+  number     String    @db.VarChar(10)
+  complement String?   @db.VarChar(50)
+  city       String    @db.VarChar(50)
+  state      String    @db.VarChar(50)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("user_address")
 }
