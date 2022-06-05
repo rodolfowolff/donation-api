@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as services from '@/api/services/users.service'
 
 
-export interface IUserAddress {
+interface IUserAddress {
   zipCode: string;
   street: string;
   number: string;
@@ -17,9 +17,15 @@ export interface IUser {
   lastName: string;
   email: string;
   password: string;
+  status?: "ACTIVE" | "INACTIVE";
   document: string;
   birthDate: string;
   telephone: string;
+  address: IUserAddress;
+}
+
+export interface IUserUpdate {
+  telephone?: string | null;
   address: IUserAddress;
 }
 
@@ -76,6 +82,37 @@ export const findUserById = async (req: Request, res: Response) => {
     console.error('Error find user by id: ', error);
     res.status(500).json({
       message: 'Error find user by id',
+      error: error.message,
+    });
+  }
+}
+
+export const updateUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const data = req.body as IUserUpdate;
+
+  try {
+    const user = await services.updateUser(id, data);
+    res.status(200).json(user);
+  } catch (error: any) {
+    console.error('Error update user: ', error);
+    res.status(500).json({
+      message: 'Error update user',
+      error: error.message,
+    });
+  }
+}
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const user = await services.deleteUser(id);
+    res.status(200).json(user);
+  } catch (error: any) {
+    console.error('Error delete user: ', error);
+    res.status(500).json({
+      message: 'Error delete user',
       error: error.message,
     });
   }

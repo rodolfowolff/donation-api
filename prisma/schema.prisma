@@ -13,7 +13,7 @@ model User {
   lastName         String            @db.VarChar(20)
   email            String            @unique @db.VarChar(50)
   password         String            @db.VarChar(100)
-  active           Boolean           @default(true)
+  status           UserStatus        @default(ACTIVE)
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   deletedAt        DateTime?
@@ -55,4 +55,9 @@ model UserAddress {
   user User @relation(fields: [userId], references: [id])
 
   @@map("user_address")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
 }

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { cpfCnpjUnmask, telephoneUnmask, cepUnmask } from 'js-essentials-functions'
 
 import { prisma } from "@/database/prismaClient";
-import { IUser } from "@/api/controllers/users.controller";
+import { IUser, IUserUpdate } from "@/api/controllers/users.controller";
 import { createToken } from "@/utils/jwt";
 
 
@@ -84,7 +84,7 @@ export const createUser = async (data: IUser) => {
 }
 
 export const loginUser = async (email: string, password: string) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
       email,
     },
@@ -93,11 +93,16 @@ export const loginUser = async (email: string, password: string) => {
       firstName: true,
       email: true,
       password: true,
+      status: true,
     }
   });
 
   if (!user) {
     throw new Error("User or password invalid");
+  }
+
+  if (user.status !== "ACTIVE") {
+    throw new Error("User is not active");
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -123,8 +128,7 @@ export const findAllUsers = async () => {
   return await prisma.user.findMany(
     {
       where: {
-        active: true,
-        deletedAt: null
+        status: 'ACTIVE',
       },
       select: {
         id: true,
@@ -159,8 +163,7 @@ export const findUserById = async (id: string) => {
   const user = await prisma.user.findFirst({
     where: {
       id: id,
-      active: true,
-      deletedAt: null
+      status: 'ACTIVE',
     },
     select: {
       id: true,
@@ -190,4 +193,94 @@ export const findUserById = async (id: string) => {
   if (!user) throw new Error("User not found");
 
   return user;
+}
+
+export const updateUser = async (id: string, data: IUserUpdate) => {
+  if (id.length < 36) throw new Error("Invalid id");
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+    select: {
+      status: true,
+      userPersonalData: {
+        select: {
+          telephone: true,
+        }
+      },
+      userAddress: {
+        select: {
+          zipCode: true,
+          street: true,
+          number: true,
+          complement: true,
+          neighborhood: true,
+          city: true,
+          state: true,
+        }
+      }
+    }
+  });
+
+  if (!user) throw new Error("User not found");
+
+  if (user.status !== "ACTIVE") {
+    throw new Error("User is not active");
+  }
+
+  await prisma.user.update({
+    where: {
+      id: id,
+    },
+    data: {
+      userPersonalData: {
+        update: {
+          telephone: data.telephone !== "" && data.telephone !== user.userPersonalData?.telephone ? telephoneUnmask(data.telephone || "") : user.userPersonalData?.telephone,
+        }
+      },
+      userAddress: {
+        update: {
+          ...data.address,
+          zipCode: data.address.zipCode !== "" && data.address.zipCode !== user.userAddress?.zipCode ? cepUnmask(data.address.zipCode || "") : user.userAddress?.zipCode,
+        }
+      }
+    }
+  });
+
+  return {
+    message: `User updated successfully`,
+  }
+}
+
+export const deleteUser = async (id: string) => {
+  if (id.length < 36) throw new Error("Invalid id");
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+    select: {
+      firstName: true,
+      lastName: true,
+      status: true,
+    }
+  });
+
+  if (!user) throw new Error("User not found");
+
+  if (user.status === 'INACTIVE') throw new Error("User already deleted");
+
+  await prisma.user.update({
+    where: {
+      id: id,
+    },
+    data: {
+      status: 'INACTIVE',
+    }
+  });
+
+  return {
+    message: `User ${user.firstName} ${user.lastName} deleted successfully`,
+  }
 }
