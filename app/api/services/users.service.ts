@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt";
 import { cpfCnpjUnmask, telephoneUnmask, cepUnmask } from 'js-essentials-functions'
+
 import { prisma } from "@/database/prismaClient";
 import { IUser } from "@/api/controllers/users.controller";
+import { createToken } from "@/utils/jwt";
+
 
 export const createUser = async (data: IUser) => {
   if (!data.firstName || !data.lastName || !data.email || !data.password) {
@@ -80,6 +83,42 @@ export const createUser = async (data: IUser) => {
   }
 }
 
+export const loginUser = async (email: string, password: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+    select: {
+      id: true,
+      firstName: true,
+      email: true,
+      password: true,
+    }
+  });
+
+  if (!user) {
+    throw new Error("User or password invalid");
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    throw new Error("User or password invalid");
+  }
+
+  const token = createToken({id: user.id});
+
+  return {
+    user: {
+      id: user.id,
+      firstName: user.firstName,
+      email: user.email,
+    },
+    token,
+  };
+}
+
+
 export const findAllUsers = async () => {
   return await prisma.user.findMany(
     {
@@ -91,6 +130,24 @@ export const findAllUsers = async () => {
         id: true,
         firstName: true,
         email: true,
+        // userPersonalData: {
+        //   select: {
+        //     birthDate: true,
+        //     document: true,
+        //     telephone: true,
+        //   }
+        // },
+        // userAddress: {
+        //   select: {
+        //     zipCode: true,
+        //     street: true,
+        //     number: true,
+        //     complement: true,
+        //     neighborhood: true,
+        //     city: true,
+        //     state: true,
+        //   }
+        // }
       }
     }
   );
@@ -109,6 +166,24 @@ export const findUserById = async (id: string) => {
       id: true,
       firstName: true,
       email: true,
+      // userPersonalData: {
+      //   select: {
+      //     birthDate: true,
+      //     document: true,
+      //     telephone: true,
+      //   }
+      // },
+      // userAddress: {
+      //   select: {
+      //     zipCode: true,
+      //     street: true,
+      //     number: true,
+      //     complement: true,
+      //     neighborhood: true,
+      //     city: true,
+      //     state: true,
+      //   }
+      // }
     }
   });
 

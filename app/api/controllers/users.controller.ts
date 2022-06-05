@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as services from '@/api/services/users.service'
 
+
 export interface IUserAddress {
   zipCode: string;
   street: string;
@@ -32,6 +33,21 @@ export const createUser = async (req: Request, res: Response) => {
     console.error('Error creating user: ', error);
     res.status(500).json({
       message: 'Error creating user',
+      error: error.message,
+    });
+  }
+}
+
+export const loginUser = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await services.loginUser(email, password);
+    res.status(200).json(user);
+  } catch (error: any) {
+    console.error('Error logging user: ', error);
+    res.status(500).json({
+      message: 'Error logging user',
       error: error.message,
     });
   }
