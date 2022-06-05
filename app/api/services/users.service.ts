@@ -1,29 +1,36 @@
+import bcrypt from "bcrypt";
+import { cpfCnpjUnmask, telephoneUnmask, cepUnmask } from 'js-essentials-functions'
 import { prisma } from "@/database/prismaClient";
 import { IUser } from "@/api/controllers/users.controller";
 
-export const createUser = async ({firstName, lastName, email, password}: IUser) => {
-  if (!firstName || lastName || !email || !password) {
+export const createUser = async (data: IUser) => {
+  if (!data.firstName || !data.lastName || !data.email || !data.password) {
    return {
       message: "Missing required fields",
       status: 400,
     };
   }
 
-  if (firstName.length < 3 || firstName.length > 20 || lastName.length < 3 || lastName.length > 20) {
+  // TODO: Create function to check data for validations (email, password, etc)
+
+  if (data.firstName.length < 3 || 
+      data.firstName.length > 20 || 
+      data.lastName.length < 3 || 
+      data.lastName.length > 20) {
     return {
       message: "First and last name must be at least 3 characters and at most 50 characters",
       status: 400,
     };
   }
 
-  if (!email.includes("@") || !email.includes(".") || email.length < 5 || email.length > 50) {
+  if (!data.email.includes("@") || !data.email.includes(".") || data.email.length < 5 || data.email.length > 50) {
     return {
       message: "Email must be valid and at least 5 characters and at most 50 characters",
       status: 400,
     };
   }
 
-  if (password.length < 8 || password.length > 20) {
+  if (data.password.length < 8 || data.password.length > 20) {
     return {
       message: "Password must be at least 8 characters and less than 20 characters",
       status: 400,
@@ -32,7 +39,7 @@ export const createUser = async ({firstName, lastName, email, password}: IUser) 
 
   const verifyIfUserExists = await prisma.user.findFirst({
     where: {
-      email: email
+      email: data.email
     }
   });
 
@@ -43,18 +50,41 @@ export const createUser = async ({firstName, lastName, email, password}: IUser) 
     };
   }
 
-  const user = await prisma.user.create({
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+  const documentUnmasked = cpfCnpjUnmask(data.document);
+  const telephoneUnmasked = telephoneUnmask(data.telephone);
+  const cepUnmasked = cepUnmask(data.address.zipCode);
+
+  await prisma.user.create({
     data: {
-      name: name,
-      email: email,
-      password: password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hashedPassword,
+      userPersonalData: {
+        create: {
+          birthDate: data.birthDate,
+          document: documentUnmasked,
+          telephone:telephoneUnmasked,
+        }
+      },
+      userAddress: {
+        create: {
+          zipCode: cepUnmasked,
+          street: data.address.street,
+          number: data.address.number,
+          complement: data.address.complement || null,
+          neighborhood: data.address.neighborhood,
+          city: data.address.city,
+          state: data.address.state,
+        }
+      }
     },
   } as any);
 
   return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
+    message: "User created successfully",
+    status: 201,
   }
 }
 
@@ -67,7 +97,7 @@ export const findAllUsers = async () => {
       },
       select: {
         id: true,
-        name: true,
+        firstName: true,
         email: true,
       }
     }
@@ -90,7 +120,7 @@ export const findUserById = async (id: string) => {
     },
     select: {
       id: true,
-      name: true,
+      firstName: true,
       email: true,
     }
   });

@@ -1,11 +1,25 @@
 import { Request, Response } from "express";
 import * as services from '@/api/services/users.service'
 
+export interface IUserAddress {
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  neighborhood: string;
+  city: string;
+  state: string;
+}
+
 export interface IUser {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
+  document: string;
+  birthDate: string;
+  telephone: string;
+  address: IUserAddress;
 }
 
 export const createUser = async (req: Request, res: Response) => {

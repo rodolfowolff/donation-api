@@ -34,3 +34,4 @@ node_modules
 
 # public
 /public/*
+yarn.lock
