@@ -2,9 +2,8 @@ import bcrypt from "bcrypt";
 import { cpfCnpjUnmask, telephoneUnmask, cepUnmask } from 'js-essentials-functions'
 
 import { prisma } from "@/database/prismaClient";
-import { IUser, IUserUpdate } from "@/api/controllers/users.controller";
+import { IUser, IUserUpdate } from "../types/user.types";
 import { createToken } from "@/utils/jwt";
-
 
 export const createUser = async (data: IUser) => {
   if (!data.firstName || !data.lastName || !data.email || !data.password) {
@@ -122,7 +121,6 @@ export const loginUser = async (email: string, password: string) => {
     token,
   };
 }
-
 
 export const findAllUsers = async () => {
   return await prisma.user.findMany(

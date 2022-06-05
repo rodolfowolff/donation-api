@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import * as services from '@/api/services/users.service'
-import { IUser, IUserUpdate } from "../types/user.types";
+import * as services from '@/api/services/ongs.service'
+import { IOng, IOngUpdate } from "../types/ong.types";
 
-export const createUser = async (req: Request, res: Response) => {
-  const data = req.body as IUser;
+export const createOng = async (req: Request, res: Response) => {
+  const data = req.body as IOng;
 
   try {
-    const createdUser = await services.createUser(data);
-    res.status(201).json(createdUser);
+    const createdOng = await services.createOng(data);
+    res.status(201).json(createdOng);
   } catch (error: any) {
     console.error('Error creating user: ', error);
     res.status(500).json({
@@ -17,11 +17,11 @@ export const createUser = async (req: Request, res: Response) => {
   }
 }
 
-export const loginUser = async (req: Request, res: Response) => {
+export const loginOng = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const user = await services.loginUser(email, password);
+    const user = await services.loginOng(email, password);
     res.status(200).json(user);
   } catch (error: any) {
     console.error('Error logging user: ', error);
@@ -32,9 +32,9 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 }
 
-export const findAllUsers = async (_req: Request, res: Response) => {
+export const findAllOngs = async (_req: Request, res: Response) => {
   try {
-    const users = await services.findAllUsers();
+    const users = await services.findAllOngs();
     res.status(200).json(users);
   } catch (error: any) {
     console.error('Error find all user: ', error);
@@ -45,11 +45,11 @@ export const findAllUsers = async (_req: Request, res: Response) => {
   }
 }
 
-export const findUserById = async (req: Request, res: Response) => {
+export const findOngById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const user = await services.findUserById(id);
+    const user = await services.findOngById(id);
     res.status(200).json(user);
   } catch (error : any) {
     console.error('Error find user by id: ', error);
@@ -60,12 +60,12 @@ export const findUserById = async (req: Request, res: Response) => {
   }
 }
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateOng = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const data = req.body as IUserUpdate;
+  const data = req.body as IOngUpdate;
 
   try {
-    const user = await services.updateUser(id, data);
+    const user = await services.updateOng(id, data);
     res.status(200).json(user);
   } catch (error: any) {
     console.error('Error update user: ', error);
@@ -76,11 +76,11 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 }
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteOng = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const user = await services.deleteUser(id);
+    const user = await services.deleteOng(id);
     res.status(200).json(user);
   } catch (error: any) {
     console.error('Error delete user: ', error);

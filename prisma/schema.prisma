@@ -67,8 +67,8 @@ model Ong {
   updatedAt DateTime   @updatedAt
   deletedAt DateTime?
 
-  ongPersonalData OngPersonalData[]
-  ongAddress      OngAddress[]
+  ongPersonalData OngPersonalData?
+  ongAddress      OngAddress?
 
   @@map("ongs")
 }
