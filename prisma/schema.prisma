@@ -76,8 +76,9 @@ model Ong {
 model OngPersonalData {
   id          String    @id @default(uuid())
   ongId       String    @unique
-  document    String    @unique @db.VarChar(11)
+  document    String    @unique @db.VarChar(14)
   description String    @db.VarChar(200)
+  banner      String?   @db.VarChar(200)
   phone       String?   @db.VarChar(10)
   telephone   String    @db.VarChar(11)
   website     String?   @db.VarChar(50)

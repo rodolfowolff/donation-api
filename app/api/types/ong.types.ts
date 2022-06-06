@@ -29,6 +29,7 @@ export interface IOng {
   status?: "ACTIVE" | "INACTIVE";
   document: string;
   description: string;
+  banner: string;
   phone: string;
   telephone: string;
   website: string;

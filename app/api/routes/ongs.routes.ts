@@ -8,6 +8,8 @@ const ongsRoutes = (app: Express) => {
 
   app.route("/ongs").get(controller.findAllOngs);
 
+  app.route("/ongs/distance").get(controller.findOngByDistance);
+
   app.route("/ongs/:id").get(controller.findOngById);
 
   app.route("/ongs/:id").put(controller.updateOng);

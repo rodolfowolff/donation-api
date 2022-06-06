@@ -6,6 +6,7 @@ dotenv.config();
 
 // Routes
 import usersRoutes from '@/api/routes/users.routes';
+import ongsRoutes from '@/api/routes/ongs.routes';
 
 export default (): Express => {
   const app = express();
@@ -17,6 +18,7 @@ export default (): Express => {
   
   // Routes
   usersRoutes(app);
+  ongsRoutes(app);
 
   return app;
 }

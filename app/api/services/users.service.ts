@@ -33,7 +33,7 @@ export const createUser = async (data: IUser) => {
         { email: data.email },
         { 
           userPersonalData: {
-            document: data.document 
+            document: cpfCnpjUnmask(data.document)
           }
         }
       ]

@@ -30,7 +30,7 @@ export const createOng = async (data: IOng) => {
         { email: data.email },
         { 
           ongPersonalData: {
-            document: data.document 
+            document: cpfCnpjUnmask(data.document)
           }
         }
       ]
@@ -57,6 +57,7 @@ export const createOng = async (data: IOng) => {
         create: {
           document: documentUnmasked,
           description: data.description,
+          banner: data.banner,
           phone: phoneUnmasked,
           telephone:telephoneUnmasked,
           website: data.website,
@@ -201,6 +202,36 @@ export const findOngById = async (id: string) => {
 
   return ong;
 }
+
+export const findOngByDistance = async ({
+  latitude, longitude, distanceKm= "10"
+}: { 
+  latitude: string;
+  longitude: string;
+  distanceKm?: string;
+}) => {
+  const ongs = await prisma.$queryRawUnsafe(
+    `
+    SELECT 
+    ONG.name, ONG.email,
+    OA."zipCode", OA."street", OA."number", OA."complement", OA."neighborhood", OA."city", OA."state",
+    round(haversine($1, $2, OA.latitude, OA.longitude) * 1000) AS distance,
+    OPD."description", OPD."banner", OPD."phone", OPD."telephone", OPD."website", OPD."facebook", OPD."instagram"
+    FROM "ongs" AS ONG
+      INNER JOIN "ong_address" AS OA ON ONG.id = OA."ongId"
+      INNER JOIN "ong_personal_data" AS OPD ON ONG.id = OPD."ongId"
+    WHERE ONG.status = 'ACTIVE'
+    AND round(haversine($1, $2, latitude, longitude) * 1000) <= $3 * 1000
+    LIMIT 10;
+    `,
+    parseFloat(latitude),
+    parseFloat(longitude),
+    Number(distanceKm)
+  );
+
+  return ongs;
+}
+
 
 export const updateOng = async (id: string, data: IOngUpdate) => {
   if (id.length < 36) throw new Error("Invalid id");
