@@ -13,13 +13,14 @@ model User {
   lastName         String            @db.VarChar(20)
   email            String            @unique @db.VarChar(50)
   password         String            @db.VarChar(100)
-  status           UserStatus        @default(ACTIVE)
+  status           Status            @default(ACTIVE)
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   deletedAt        DateTime?
   userPersonalData UserPersonalData?
   userAddress      UserAddress?
 
+  Donation Donation[]
   @@map("users")
 }
 
@@ -58,18 +59,19 @@ model UserAddress {
 }
 
 model Ong {
-  id        String     @id @default(uuid())
-  name      String     @db.VarChar(80)
-  email     String     @unique @db.VarChar(50)
-  password  String     @db.VarChar(100)
-  status    UserStatus @default(ACTIVE)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id        String    @id @default(uuid())
+  name      String    @db.VarChar(80)
+  email     String    @unique @db.VarChar(50)
+  password  String    @db.VarChar(100)
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   ongPersonalData OngPersonalData?
   ongAddress      OngAddress?
 
+  Donation Donation[]
   @@map("ongs")
 }
 
@@ -114,7 +116,42 @@ model OngAddress {
   @@map("ong_address")
 }
 
-enum UserStatus {
+model Donation {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  ongId     String    @unique
+  value     Int
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  ong  Ong  @relation(fields: [ongId], references: [id])
+
+  @@map("donations")
+}
+
+model Faq {
+  id        String    @id @default(uuid())
+  question  String    @db.VarChar(200)
+  answer    String    @db.VarChar(200)
+  type      FaqType   @default(GENERAL)
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("faqs")
+}
+
+enum Status {
   ACTIVE
   INACTIVE
+}
+
+enum FaqType {
+  GENERAL
+  ONG
+  DONOR
 }

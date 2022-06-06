@@ -7,6 +7,7 @@ dotenv.config();
 // Routes
 import usersRoutes from '@/api/routes/users.routes';
 import ongsRoutes from '@/api/routes/ongs.routes';
+import faqsRoutes from '@/api/routes/faqs.routes';
 
 export default (): Express => {
   const app = express();
@@ -19,6 +20,7 @@ export default (): Express => {
   // Routes
   usersRoutes(app);
   ongsRoutes(app);
+  faqsRoutes(app);
 
   return app;
 }

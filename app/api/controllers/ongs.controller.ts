@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import * as services from '@/api/services/ongs.service'
 import { IOng, IOngUpdate } from "../types/ong.types";
+import * as services from '@/api/services/ongs.service';
 
 export const createOng = async (req: Request, res: Response) => {
   const data = req.body as IOng;
