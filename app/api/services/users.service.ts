@@ -156,7 +156,7 @@ export const findAllUsers = async () => {
 }
 
 export const findUserById = async (id: string) => {
-  if (id.length < 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   const user = await prisma.user.findFirst({
     where: {
@@ -194,7 +194,7 @@ export const findUserById = async (id: string) => {
 }
 
 export const updateUser = async (id: string, data: IUserUpdate) => {
-  if (id.length < 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   const user = await prisma.user.findUnique({
     where: {
@@ -284,7 +284,7 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
 }
 
 export const deleteUser = async (id: string) => {
-  if (id.length < 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   const user = await prisma.user.findUnique({
     where: {

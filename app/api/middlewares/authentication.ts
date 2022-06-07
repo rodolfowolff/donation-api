@@ -2,17 +2,24 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { base64Decode } from '@/utils/base64';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export const decodeToken = (token: string) => {
   const parts = token.split(" ");
   let data = null;
-
+  if (parts.length === 2) {
+    const credentials = parts[1];
+    jwt.verify(credentials,  process.env.JWT_SECRET || 'secretDev', (err, decoded) => {
+      if (err) return null;
+      data = decoded;
+    });
+    return data;
+  }
   jwt.verify(parts[0],  process.env.JWT_SECRET || 'secretDev', (err, decoded) => {
     if (err) return null;
     data = decoded;
   });
-
   return data;
 }
 
@@ -45,7 +52,6 @@ const verifyJWT = (authorization: string) => {
 }
 
 export const verifyAuthentication = (req: Request, res: Response, next: NextFunction) => {
-
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -73,7 +79,6 @@ export const verifyAuthentication = (req: Request, res: Response, next: NextFunc
     const decodedToken = decodeToken(token);
 
     if (!decodedToken) {
-      console.log('decodedToken', decodedToken, 'error', error);
       return res.status(401).json({ error });
     }
   }

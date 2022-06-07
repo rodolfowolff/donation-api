@@ -1,17 +1,23 @@
 import { IOngBank } from "../types/ongBank.type";
 import { prisma } from "@/database/prismaClient";
+import { findOngById } from "@/api/services/ongs.service";
+import { cpfCnpjUnmask } from 'js-essentials-functions'
 
 export const createOngBank = async (id: string, data: IOngBank) => {
-  if (!id || id.length < 36) throw new Error("Invalid id")
+  
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   if (!data.bankName || 
       !data.agency || 
       !data.account || 
       !data.owner || 
-      !data.ownerDocument || 
+      !cpfCnpjUnmask(data.ownerDocument) || 
       !data.pixKeyType || 
       !data.pixKey)
     throw new Error("Bank name, agency, account, owner, owner document, pix key type and pix key are required");
+
+    const ong = await findOngById(id as any);
+    if (!ong) throw new Error("Ong not found");
 
   const checkIfExistOngBank = await prisma.ongBankAccount.findFirst({
     where: {
@@ -20,7 +26,7 @@ export const createOngBank = async (id: string, data: IOngBank) => {
       agency: data.agency,
       account: data.account,
       owner: data.owner,
-      ownerDocument: data.ownerDocument,
+      ownerDocument: cpfCnpjUnmask(data.ownerDocument),
       pixKeyType: data.pixKeyType,
       pixKey: data.pixKey,
       deletedAt: null
@@ -36,7 +42,7 @@ export const createOngBank = async (id: string, data: IOngBank) => {
       agency: data.agency,
       account: data.account,
       owner: data.owner,
-      ownerDocument: data.ownerDocument,
+      ownerDocument: cpfCnpjUnmask(data.ownerDocument),
       pixKeyType: data.pixKeyType,
       pixKey: data.pixKey,
     },
@@ -48,7 +54,10 @@ export const createOngBank = async (id: string, data: IOngBank) => {
 }
 
 export const getOngBank = async (id: string) => {
-  if (!id || id.length < 36) throw new Error("Invalid id")
+  if (!id || id.length !== 36) throw new Error("Invalid id");
+
+  const ong = await findOngById(id as any);
+  if (!ong) throw new Error("Ong not found");
 
   const ongBank = await prisma.ongBankAccount.findMany({
     where: {
@@ -73,25 +82,28 @@ export const getOngBank = async (id: string) => {
 }
 
 export const updateOngBank = async (id: string, data: IOngBank) => {
-  if (!id || id.length < 36) throw new Error("Invalid id")
+  if (!id || id.length !== 36) throw new Error("Invalid id");
+
+  const ong = await findOngById(id as any);
+  if (!ong) throw new Error("Ong not found");
 
   if (!data.bankName ||
       !data.agency ||
       !data.account ||
       !data.owner ||
-      !data.ownerDocument ||
+      !cpfCnpjUnmask(data.ownerDocument) ||
       !data.pixKeyType ||
       !data.pixKey)
     throw new Error("Bank name, agency, account, owner, owner document, pix key type and pix key are required");
 
   const checkIfExistOngBank = await prisma.ongBankAccount.findFirst({
     where: {
-      ongId: id,
+      id: id,
       bankName: data.bankName,
       agency: data.agency,
       account: data.account,
       owner: data.owner,
-      ownerDocument: data.ownerDocument,
+      ownerDocument: cpfCnpjUnmask(data.ownerDocument),
       pixKeyType: data.pixKeyType,
       pixKey: data.pixKey,
       deletedAt: null
@@ -104,7 +116,7 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
       data.agency === checkIfExistOngBank.agency &&
       data.account === checkIfExistOngBank.account &&
       data.owner === checkIfExistOngBank.owner &&
-      data.ownerDocument === checkIfExistOngBank.ownerDocument &&
+      data.ownerDocument === cpfCnpjUnmask(checkIfExistOngBank.ownerDocument) &&
       data.pixKeyType === checkIfExistOngBank.pixKeyType &&
       data.pixKey === checkIfExistOngBank.pixKey) {
     throw new Error("No changes detected");
@@ -112,7 +124,7 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
 
   await prisma.ongBankAccount.update({
     where: {
-      id: checkIfExistOngBank.id,
+      id: id,
     },
     data: {
       bankName: data.bankName === "" || data.bankName === checkIfExistOngBank.bankName
@@ -127,9 +139,9 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
       owner: data.owner === "" || data.owner === checkIfExistOngBank.owner
           ? undefined
           : data.owner,
-      ownerDocument: data.ownerDocument === "" || data.ownerDocument === checkIfExistOngBank.ownerDocument
+      ownerDocument: data.ownerDocument === "" || cpfCnpjUnmask(data.ownerDocument) === checkIfExistOngBank.ownerDocument
           ? undefined
-          : data.ownerDocument,
+          : cpfCnpjUnmask(data.ownerDocument),
       pixKeyType: data.pixKeyType === "" || data.pixKeyType === checkIfExistOngBank.pixKeyType
           ? undefined
           : data.pixKeyType,
@@ -145,7 +157,10 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
 }
 
 export const deleteOngBank = async (id: string) => {
-  if (!id || id.length < 36) throw new Error("Invalid id")
+  if (!id || id.length !== 36) throw new Error("Invalid id");
+
+  const ong = await findOngById(id as any);
+  if (!ong) throw new Error("Ong not found");
 
   const checkIfExistOngBank = await prisma.ongBankAccount.findFirst({
     where: {

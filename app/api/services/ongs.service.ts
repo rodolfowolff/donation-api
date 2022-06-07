@@ -156,6 +156,28 @@ export const findAllOngs = async () => {
         //     latitude: true,
         //     longitude: true,
         //   }
+        // },
+        // ongBankAccount: {
+        //   select: {
+        //     bankName: true,
+        //     agency: true,
+        //     account: true,
+        //     owner: true,
+        //     ownerDocument: true,
+        //     pixKeyType: true,
+        //     pixKey: true,
+        //   }
+        // },
+        // donation: {
+        //   select: {
+        //     id: true,
+        //     userId: true,
+        //     value: true,
+        //     type: true,
+        //     status: true,
+        //     createdAt: true,
+        //     updatedAt: true,
+        //   }
         // }
       }
     }
@@ -163,7 +185,7 @@ export const findAllOngs = async () => {
 }
 
 export const findOngById = async (id: string) => {
-  if (id.length < 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   const ong = await prisma.ong.findFirst({
     where: {
@@ -194,6 +216,28 @@ export const findOngById = async (id: string) => {
         //     latitude: true,
         //     longitude: true,
         //   }
+        // },
+        // ongBankAccount: {
+        //   select: {
+        //     bankName: true,
+        //     agency: true,
+        //     account: true,
+        //     owner: true,
+        //     ownerDocument: true,
+        //     pixKeyType: true,
+        //     pixKey: true,
+        //   }
+        // },
+        // donation: {
+        //   select: {
+        //     id: true,
+        //     userId: true,
+        //     value: true,
+        //     type: true,
+        //     status: true,
+        //     createdAt: true,
+        //     updatedAt: true,
+        //   }
         // }
     }
   });
@@ -220,6 +264,8 @@ export const findOngByDistance = async ({
     FROM "ongs" AS ONG
       INNER JOIN "ong_address" AS OA ON ONG.id = OA."ongId"
       INNER JOIN "ong_personal_data" AS OPD ON ONG.id = OPD."ongId"
+      INNER JOIN "ong_bank_account" AS OB ON ONG.id = OB."ongId"
+      INNER JOIN "donation" AS D ON ONG.id = D."ongId"
     WHERE ONG.status = 'ACTIVE'
     AND round(haversine($1, $2, latitude, longitude) * 1000) <= $3 * 1000
     LIMIT 10;
@@ -234,7 +280,7 @@ export const findOngByDistance = async ({
 
 
 export const updateOng = async (id: string, data: IOngUpdate) => {
-  if (id.length < 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {
@@ -339,7 +385,7 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
 }
 
 export const deleteOng = async (id: string) => {
-  if (id.length < 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw new Error("Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {

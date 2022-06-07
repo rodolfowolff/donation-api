@@ -3,9 +3,9 @@ import * as controller from "@/api/controllers/ongs.controller";
 import { verifyAuthentication } from "../middlewares/authentication";
 
 const ongsRoutes = (app: Express) => {
-  app.route("/ongs").post(verifyAuthentication, controller.createOng);
+  app.route("/ongs").post(controller.createOng);
 
-  app.route("/ongs/login").post(verifyAuthentication, controller.loginOng);
+  app.route("/ongs/login").post(controller.loginOng);
 
   app.route("/ongs").get(verifyAuthentication, controller.findAllOngs);
 

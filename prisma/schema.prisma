@@ -20,7 +20,6 @@ model User {
   userPersonalData UserPersonalData?
   userAddress      UserAddress?
 
-  Donation Donation[]
   @@map("users")
 }
 
@@ -70,10 +69,7 @@ model Ong {
 
   ongPersonalData OngPersonalData?
   ongAddress      OngAddress?
-
-  donation       Donation[]
-  ongBankAccount OngBankAccount[]
-
+  ongBankAccount  OngBankAccount?
   @@map("ongs")
 }
 
@@ -139,17 +135,14 @@ model OngBankAccount {
 
 model Donation {
   id        String         @id @default(uuid())
-  userId    String         @unique
-  ongId     String         @unique
+  userId    String         @db.VarChar(50)
+  ongId     String         @db.VarChar(50)
   value     Decimal?       @default(0.00) @db.Decimal(10, 2)
   type      DonationType   @default(PIX)
   status    DonationStatus @default(PENDING)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?
-
-  user User @relation(fields: [userId], references: [id])
-  ong  Ong  @relation(fields: [ongId], references: [id])
 
   @@map("donations")
 }
@@ -188,4 +181,9 @@ enum DonationType {
   PIX
   CASH
   CREDIT_CARD
+  FOOD
+  CLOTHING
+  FURNITURE
+  ELETRONIC
+  OTHER
 }
