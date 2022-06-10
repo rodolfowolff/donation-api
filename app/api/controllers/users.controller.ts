@@ -1,8 +1,12 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import * as services from "@/api/services/users.service";
 import { IUser, IUserUpdate } from "../types/user.types";
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const data = req.body as IUser;
 
   try {
@@ -10,14 +14,15 @@ export const createUser = async (req: Request, res: Response) => {
     res.status(201).json(createdUser);
   } catch (error: any) {
     console.error("Error creating user: ", error);
-    res.status(500).json({
-      message: "Error creating user",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { document, password } = req.body;
 
   try {
@@ -25,27 +30,29 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error logging user: ", error);
-    res.status(500).json({
-      message: "Error logging user",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const findAllUsers = async (_req: Request, res: Response) => {
+export const findAllUsers = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const users = await services.findAllUsers();
     res.status(200).json(users);
   } catch (error: any) {
     console.error("Error find all user: ", error);
-    res.status(500).json({
-      message: "Error find all user",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const findUserById = async (req: Request, res: Response) => {
+export const findUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
 
   try {
@@ -53,14 +60,15 @@ export const findUserById = async (req: Request, res: Response) => {
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error find user by id: ", error);
-    res.status(500).json({
-      message: "Error find user by id",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   const data = req.body as IUserUpdate;
 
@@ -69,14 +77,15 @@ export const updateUser = async (req: Request, res: Response) => {
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error update user: ", error);
-    res.status(500).json({
-      message: "Error update user",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
 
   try {
@@ -84,9 +93,6 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error delete user: ", error);
-    res.status(500).json({
-      message: "Error delete user",
-      error: error.message,
-    });
+    next(error);
   }
 };

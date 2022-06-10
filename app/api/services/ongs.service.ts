@@ -4,6 +4,7 @@ import {
   telephoneUnmask,
   cepUnmask,
 } from "js-essentials-functions";
+import createError from "http-errors";
 
 import { prisma } from "@/database/prismaClient";
 import { createToken } from "@/utils/jwt";
@@ -11,13 +12,14 @@ import { IOng, IOngUpdate } from "../types/ong.types";
 
 export const createOng = async (data: IOng) => {
   if (!data.name || !data.email || !data.password) {
-    throw new Error("Missing required fields");
+    throw createError(400, "Missing required fields");
   }
 
   // TODO: Create function to check data for validations (email, password, address, etc)
 
   if (data.name.length < 3 || data.name.length > 80) {
-    throw new Error(
+    throw createError(
+      400,
       "Name must be at least 3 characters and at most 80 characters"
     );
   }
@@ -28,13 +30,15 @@ export const createOng = async (data: IOng) => {
     data.email.length < 5 ||
     data.email.length > 50
   ) {
-    throw new Error(
+    throw createError(
+      400,
       "Email must be valid and at least 5 characters and at most 50 characters"
     );
   }
 
   if (data.password.length < 8 || data.password.length > 20) {
-    throw new Error(
+    throw createError(
+      400,
       "Password must be at least 8 characters and less than 20 characters"
     );
   }
@@ -53,7 +57,7 @@ export const createOng = async (data: IOng) => {
   });
 
   if (verifyIfOngExists) {
-    throw new Error("Ong already exists");
+    throw createError(404, "Ong already exists");
   }
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -101,10 +105,10 @@ export const createOng = async (data: IOng) => {
 };
 
 export const loginOng = async (document: string, password: string) => {
-  if (!document || !password) throw new Error("Missing required fields");
+  if (!document || !password) throw createError(400, "Missing required fields");
 
   const documentUnmasked = cpfCnpjUnmask(document);
-  if (!documentUnmasked) throw new Error("Document is invalid");
+  if (!documentUnmasked) throw createError(400, "Document is invalid");
 
   const ong = await prisma.ong.findFirst({
     where: {
@@ -124,17 +128,17 @@ export const loginOng = async (document: string, password: string) => {
   });
 
   if (!ong) {
-    throw new Error("Ong or password invalid");
+    throw createError(400, "Ong or password invalid");
   }
 
   if (ong.status !== "ACTIVE") {
-    throw new Error("Ong is not active");
+    throw createError(400, "Ong is not active");
   }
 
   const isPasswordValid = await bcrypt.compare(password, ong.password);
 
   if (!isPasswordValid) {
-    throw new Error("Ong or password invalid");
+    throw createError(400, "Ong or password invalid");
   }
 
   const token = createToken({ id: ong.id });
@@ -208,7 +212,7 @@ export const findAllOngs = async () => {
 };
 
 export const findOngById = async (id: string) => {
-  if (!id || id.length !== 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findFirst({
     where: {
@@ -265,7 +269,7 @@ export const findOngById = async (id: string) => {
     },
   });
 
-  if (!ong) throw new Error("Ong not found");
+  if (!ong) throw createError(404, "Ong not found");
 
   return ong;
 };
@@ -304,7 +308,7 @@ export const findOngByDistance = async ({
 };
 
 export const updateOng = async (id: string, data: IOngUpdate) => {
-  if (!id || id.length !== 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {
@@ -334,10 +338,10 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
     },
   });
 
-  if (!ong) throw new Error("Ong not found");
+  if (!ong) throw createError(404, "Ong not found");
 
   if (ong.status !== "ACTIVE") {
-    throw new Error("Ong is not active");
+    throw createError(400, "Ong is not active");
   }
 
   if (
@@ -354,7 +358,7 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
     data.address?.latitude === ong.ongAddress?.latitude &&
     data.address?.longitude === ong.ongAddress?.longitude
   ) {
-    throw new Error("Address not changed");
+    throw createError(400, "Address not changed");
   }
 
   await prisma.ong.update({
@@ -436,7 +440,7 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
 };
 
 export const deleteOng = async (id: string) => {
-  if (!id || id.length !== 36) throw new Error("Invalid id");
+  if (!id || id.length !== 36) throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {
@@ -448,9 +452,9 @@ export const deleteOng = async (id: string) => {
     },
   });
 
-  if (!ong) throw new Error("Ong not found");
+  if (!ong) throw createError(404, "Ong not found");
 
-  if (ong.status === "INACTIVE") throw new Error("Ong already deleted");
+  if (ong.status === "INACTIVE") throw createError(400, "Ong already deleted");
 
   await prisma.ong.update({
     where: {

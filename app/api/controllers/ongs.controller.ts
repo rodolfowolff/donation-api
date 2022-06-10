@@ -1,8 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { IOng, IOngUpdate } from "../types/ong.types";
 import * as services from "@/api/services/ongs.service";
 
-export const createOng = async (req: Request, res: Response) => {
+export const createOng = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const data = req.body as IOng;
 
   try {
@@ -10,14 +14,15 @@ export const createOng = async (req: Request, res: Response) => {
     res.status(201).json(createdOng);
   } catch (error: any) {
     console.error("Error creating ong: ", error);
-    res.status(500).json({
-      message: "Error creating ong",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const loginOng = async (req: Request, res: Response) => {
+export const loginOng = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { document, password } = req.body;
 
   try {
@@ -25,27 +30,29 @@ export const loginOng = async (req: Request, res: Response) => {
     res.status(200).json(ong);
   } catch (error: any) {
     console.error("Error logging ong: ", error);
-    res.status(500).json({
-      message: "Error logging ong",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const findAllOngs = async (_req: Request, res: Response) => {
+export const findAllOngs = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const ongs = await services.findAllOngs();
     res.status(200).json(ongs);
   } catch (error: any) {
     console.error("Error find all ongs: ", error);
-    res.status(500).json({
-      message: "Error find all ongs",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const findOngById = async (req: Request, res: Response) => {
+export const findOngById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
 
   try {
@@ -53,14 +60,15 @@ export const findOngById = async (req: Request, res: Response) => {
     res.status(200).json(ong);
   } catch (error: any) {
     console.error("Error find ong by id: ", error);
-    res.status(500).json({
-      message: "Error find ong by id",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const findOngByDistance = async (req: Request, res: Response) => {
+export const findOngByDistance = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const query = req.query as {
     latitude: string;
     longitude: string;
@@ -76,14 +84,15 @@ export const findOngByDistance = async (req: Request, res: Response) => {
     res.status(200).json(ongs);
   } catch (error: any) {
     console.error("Error find ong by distance: ", error);
-    res.status(500).json({
-      message: "Error find ong by distance",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const updateOng = async (req: Request, res: Response) => {
+export const updateOng = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   const data = req.body as IOngUpdate;
 
@@ -92,14 +101,15 @@ export const updateOng = async (req: Request, res: Response) => {
     res.status(200).json(ong);
   } catch (error: any) {
     console.error("Error update ong: ", error);
-    res.status(500).json({
-      message: "Error update ong",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const deleteOng = async (req: Request, res: Response) => {
+export const deleteOng = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
 
   try {
@@ -107,9 +117,6 @@ export const deleteOng = async (req: Request, res: Response) => {
     res.status(200).json(ong);
   } catch (error: any) {
     console.error("Error delete ong: ", error);
-    res.status(500).json({
-      message: "Error delete ong",
-      error: error.message,
-    });
+    next(error);
   }
 };
