@@ -1,5 +1,9 @@
 import bcrypt from "bcrypt";
-import { cpfCnpjUnmask, telephoneUnmask, cepUnmask } from 'js-essentials-functions'
+import {
+  cpfCnpjUnmask,
+  telephoneUnmask,
+  cepUnmask,
+} from "js-essentials-functions";
 
 import { prisma } from "@/database/prismaClient";
 import { createToken } from "@/utils/jwt";
@@ -13,34 +17,44 @@ export const createOng = async (data: IOng) => {
   // TODO: Create function to check data for validations (email, password, address, etc)
 
   if (data.name.length < 3 || data.name.length > 80) {
-    throw new Error("Name must be at least 3 characters and at most 80 characters");
+    throw new Error(
+      "Name must be at least 3 characters and at most 80 characters"
+    );
   }
 
-  if (!data.email.includes("@") || !data.email.includes(".") || data.email.length < 5 || data.email.length > 50) {
-    throw new Error("Email must be valid and at least 5 characters and at most 50 characters");
+  if (
+    !data.email.includes("@") ||
+    !data.email.includes(".") ||
+    data.email.length < 5 ||
+    data.email.length > 50
+  ) {
+    throw new Error(
+      "Email must be valid and at least 5 characters and at most 50 characters"
+    );
   }
 
   if (data.password.length < 8 || data.password.length > 20) {
-    throw new Error("Password must be at least 8 characters and less than 20 characters");
+    throw new Error(
+      "Password must be at least 8 characters and less than 20 characters"
+    );
   }
 
   const verifyIfOngExists = await prisma.ong.findFirst({
     where: {
       OR: [
-        { email: data.email },
-        { 
+        { document: cpfCnpjUnmask(data.document) },
+        {
           ongPersonalData: {
-            document: cpfCnpjUnmask(data.document)
-          }
-        }
-      ]
-    }
+            email: data.email,
+          },
+        },
+      ],
+    },
   });
 
   if (verifyIfOngExists) {
     throw new Error("Ong already exists");
   }
-
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const documentUnmasked = cpfCnpjUnmask(data.document);
@@ -51,19 +65,19 @@ export const createOng = async (data: IOng) => {
   await prisma.ong.create({
     data: {
       name: data.name,
-      email: data.email,
+      document: documentUnmasked,
       password: hashedPassword,
       ongPersonalData: {
         create: {
-          document: documentUnmasked,
+          email: data.email,
           description: data.description,
           banner: data.banner,
           phone: phoneUnmasked,
-          telephone:telephoneUnmasked,
+          telephone: telephoneUnmasked,
           website: data.website,
           facebook: data.facebook,
           instagram: data.instagram,
-        }
+        },
       },
       ongAddress: {
         create: {
@@ -76,28 +90,37 @@ export const createOng = async (data: IOng) => {
           state: data.address.state,
           latitude: data.address.latitude,
           longitude: data.address.longitude,
-        }
-      }
+        },
+      },
     },
   } as any);
 
   return {
     message: "Ong created successfully",
-  }
-}
+  };
+};
 
-export const loginOng = async (email: string, password: string) => {
+export const loginOng = async (document: string, password: string) => {
+  if (!document || !password) throw new Error("Missing required fields");
+
+  const documentUnmasked = cpfCnpjUnmask(document);
+  if (!documentUnmasked) throw new Error("Document is invalid");
+
   const ong = await prisma.ong.findFirst({
     where: {
-      email,
+      document: documentUnmasked,
     },
     select: {
       id: true,
       name: true,
-      email: true,
       password: true,
       status: true,
-    }
+      ongPersonalData: {
+        select: {
+          email: true,
+        },
+      },
+    },
   });
 
   if (!ong) {
@@ -114,75 +137,75 @@ export const loginOng = async (email: string, password: string) => {
     throw new Error("Ong or password invalid");
   }
 
-  const token = createToken({id: ong.id});
+  const token = createToken({ id: ong.id });
 
   return {
     ong: {
       id: ong.id,
       name: ong.name,
-      email: ong.email,
+    },
+    ongPersonalData: {
+      email: ong?.ongPersonalData?.email,
     },
     token,
   };
-}
+};
 
 export const findAllOngs = async () => {
-  return await prisma.ong.findMany(
-    {
-      where: {
-        status: 'ACTIVE',
+  return await prisma.ong.findMany({
+    where: {
+      status: "ACTIVE",
+    },
+    select: {
+      id: true,
+      name: true,
+      ongPersonalData: {
+        select: {
+          email: true,
+          //     birthDate: true,
+          //     document: true,
+          //     phone: true,
+          //     telephone: true,
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        // ongPersonalData: {
-        //   select: {
-        //     birthDate: true,
-        //     document: true,
-        //     phone: true,
-        //     telephone: true,
-        //   }
-        // },
-        // ongAddress: {
-        //   select: {
-        //     zipCode: true,
-        //     street: true,
-        //     number: true,
-        //     complement: true,
-        //     neighborhood: true,
-        //     city: true,
-        //     state: true,
-        //     latitude: true,
-        //     longitude: true,
-        //   }
-        // },
-        // ongBankAccount: {
-        //   select: {
-        //     bankName: true,
-        //     agency: true,
-        //     account: true,
-        //     owner: true,
-        //     ownerDocument: true,
-        //     pixKeyType: true,
-        //     pixKey: true,
-        //   }
-        // },
-        // donation: {
-        //   select: {
-        //     id: true,
-        //     userId: true,
-        //     value: true,
-        //     type: true,
-        //     status: true,
-        //     createdAt: true,
-        //     updatedAt: true,
-        //   }
-        // }
-      }
-    }
-  );
-}
+      // ongAddress: {
+      //   select: {
+      //     zipCode: true,
+      //     street: true,
+      //     number: true,
+      //     complement: true,
+      //     neighborhood: true,
+      //     city: true,
+      //     state: true,
+      //     latitude: true,
+      //     longitude: true,
+      //   }
+      // },
+      // ongBankAccount: {
+      //   select: {
+      //     bankName: true,
+      //     agency: true,
+      //     account: true,
+      //     owner: true,
+      //     ownerDocument: true,
+      //     pixKeyType: true,
+      //     pixKey: true,
+      //   }
+      // },
+      // donation: {
+      //   select: {
+      //     id: true,
+      //     userId: true,
+      //     value: true,
+      //     type: true,
+      //     status: true,
+      //     createdAt: true,
+      //     updatedAt: true,
+      //   }
+      // }
+    },
+  });
+};
 
 export const findOngById = async (id: string) => {
   if (!id || id.length !== 36) throw new Error("Invalid id");
@@ -190,66 +213,68 @@ export const findOngById = async (id: string) => {
   const ong = await prisma.ong.findFirst({
     where: {
       id: id,
-      status: 'ACTIVE',
+      status: "ACTIVE",
     },
     select: {
       id: true,
       name: true,
-      email: true,
-        // ongPersonalData: {
-        //   select: {
-        //     birthDate: true,
-        //     document: true,
-        //     phone: true,
-        //     telephone: true,
-        //   }
-        // },
-        // ongAddress: {
-        //   select: {
-        //     zipCode: true,
-        //     street: true,
-        //     number: true,
-        //     complement: true,
-        //     neighborhood: true,
-        //     city: true,
-        //     state: true,
-        //     latitude: true,
-        //     longitude: true,
-        //   }
-        // },
-        // ongBankAccount: {
-        //   select: {
-        //     bankName: true,
-        //     agency: true,
-        //     account: true,
-        //     owner: true,
-        //     ownerDocument: true,
-        //     pixKeyType: true,
-        //     pixKey: true,
-        //   }
-        // },
-        // donation: {
-        //   select: {
-        //     id: true,
-        //     userId: true,
-        //     value: true,
-        //     type: true,
-        //     status: true,
-        //     createdAt: true,
-        //     updatedAt: true,
-        //   }
-        // }
-    }
+      ongPersonalData: {
+        select: {
+          email: true,
+          //     birthDate: true,
+          //     document: true,
+          //     phone: true,
+          //     telephone: true,
+        },
+      },
+      // ongAddress: {
+      //   select: {
+      //     zipCode: true,
+      //     street: true,
+      //     number: true,
+      //     complement: true,
+      //     neighborhood: true,
+      //     city: true,
+      //     state: true,
+      //     latitude: true,
+      //     longitude: true,
+      //   }
+      // },
+      // ongBankAccount: {
+      //   select: {
+      //     bankName: true,
+      //     agency: true,
+      //     account: true,
+      //     owner: true,
+      //     ownerDocument: true,
+      //     pixKeyType: true,
+      //     pixKey: true,
+      //   }
+      // },
+      // donation: {
+      //   select: {
+      //     id: true,
+      //     userId: true,
+      //     value: true,
+      //     type: true,
+      //     status: true,
+      //     createdAt: true,
+      //     updatedAt: true,
+      //   }
+      // }
+    },
   });
 
   if (!ong) throw new Error("Ong not found");
 
   return ong;
-}
+};
 
 export const findOngByDistance = async ({
-  latitude, longitude, distanceKm= "10"
-}: { 
+  latitude,
+  longitude,
+  distanceKm = "10",
+}: {
   latitude: string;
   longitude: string;
   distanceKm?: string;
@@ -276,8 +301,7 @@ export const findOngByDistance = async ({
   );
 
   return ongs;
-}
-
+};
 
 export const updateOng = async (id: string, data: IOngUpdate) => {
   if (!id || id.length !== 36) throw new Error("Invalid id");
@@ -292,7 +316,7 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
         select: {
           phone: true,
           telephone: true,
-        }
+        },
       },
       ongAddress: {
         select: {
@@ -305,9 +329,9 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
           state: true,
           latitude: true,
           longitude: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (!ong) throw new Error("Ong not found");
@@ -316,17 +340,20 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
     throw new Error("Ong is not active");
   }
 
-  if (telephoneUnmask(data.phone as string) === ong.ongPersonalData?.phone &&
-      telephoneUnmask(data.telephone as string) === ong.ongPersonalData?.telephone &&
-      cepUnmask(data.address?.zipCode as string) === ong.ongAddress?.zipCode &&
-      data.address?.street === ong.ongAddress?.street &&
-      data.address?.number === ong.ongAddress?.number &&
-      data.address?.complement === ong.ongAddress?.complement &&
-      data.address?.neighborhood === ong.ongAddress?.neighborhood &&
-      data.address?.city === ong.ongAddress?.city &&
-      data.address?.state === ong.ongAddress?.state &&
-      data.address?.latitude === ong.ongAddress?.latitude &&
-      data.address?.longitude === ong.ongAddress?.longitude) {
+  if (
+    telephoneUnmask(data.phone as string) === ong.ongPersonalData?.phone &&
+    telephoneUnmask(data.telephone as string) ===
+      ong.ongPersonalData?.telephone &&
+    cepUnmask(data.address?.zipCode as string) === ong.ongAddress?.zipCode &&
+    data.address?.street === ong.ongAddress?.street &&
+    data.address?.number === ong.ongAddress?.number &&
+    data.address?.complement === ong.ongAddress?.complement &&
+    data.address?.neighborhood === ong.ongAddress?.neighborhood &&
+    data.address?.city === ong.ongAddress?.city &&
+    data.address?.state === ong.ongAddress?.state &&
+    data.address?.latitude === ong.ongAddress?.latitude &&
+    data.address?.longitude === ong.ongAddress?.longitude
+  ) {
     throw new Error("Address not changed");
   }
 
@@ -337,52 +364,76 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
     data: {
       ongPersonalData: {
         update: {
-          phone: data.phone === "" || telephoneUnmask(data.phone as string) === ong.ongPersonalData?.phone 
-          ? null
-          : telephoneUnmask(data.phone as string),
-          telephone: data.telephone === "" || telephoneUnmask(data.telephone as string) === ong.ongPersonalData?.telephone 
-          ? null
-          : telephoneUnmask(data.telephone as string),
+          phone:
+            data.phone === "" ||
+            telephoneUnmask(data.phone as string) === ong.ongPersonalData?.phone
+              ? null
+              : telephoneUnmask(data.phone as string),
+          telephone:
+            data.telephone === "" ||
+            telephoneUnmask(data.telephone as string) ===
+              ong.ongPersonalData?.telephone
+              ? null
+              : telephoneUnmask(data.telephone as string),
         } as any,
       },
       ongAddress: {
         update: {
-          zipCode: data.address?.zipCode === "" || cepUnmask(data.address?.zipCode as string) === ong.ongAddress?.zipCode 
-            ? undefined
-            : cepUnmask(data.address?.zipCode as string),
-          street: data.address?.street === "" || data.address?.street === ong.ongAddress?.street 
-            ? undefined
-            : data.address?.street,
-          number: data.address?.number === "" || data.address?.number === ong.ongAddress?.number 
-            ? undefined
-            : data.address?.number,
-          complement: data.address?.complement === "" || data.address?.complement === ong.ongAddress?.complement 
-            ? undefined
-            : data.address?.complement,
-          neighborhood: data.address?.neighborhood === "" || data.address?.neighborhood === ong.ongAddress?.neighborhood 
-            ? undefined
-            : data.address?.neighborhood,
-          city: data.address?.city === "" || data.address?.city === ong.ongAddress?.city 
-            ? undefined
-            : data.address?.city,
-          state: data.address?.state === "" || data.address?.state === ong.ongAddress?.state 
-            ? undefined
-            : data.address?.state,
-          latitude: data.address?.latitude === "" || data.address?.latitude === ong.ongAddress?.latitude
-            ? undefined
-            : data.address?.latitude,
-          longitude: data.address?.longitude === "" || data.address?.longitude === ong.ongAddress?.longitude
-            ? undefined
-            : data.address?.longitude,
+          zipCode:
+            data.address?.zipCode === "" ||
+            cepUnmask(data.address?.zipCode as string) ===
+              ong.ongAddress?.zipCode
+              ? undefined
+              : cepUnmask(data.address?.zipCode as string),
+          street:
+            data.address?.street === "" ||
+            data.address?.street === ong.ongAddress?.street
+              ? undefined
+              : data.address?.street,
+          number:
+            data.address?.number === "" ||
+            data.address?.number === ong.ongAddress?.number
+              ? undefined
+              : data.address?.number,
+          complement:
+            data.address?.complement === "" ||
+            data.address?.complement === ong.ongAddress?.complement
+              ? undefined
+              : data.address?.complement,
+          neighborhood:
+            data.address?.neighborhood === "" ||
+            data.address?.neighborhood === ong.ongAddress?.neighborhood
+              ? undefined
+              : data.address?.neighborhood,
+          city:
+            data.address?.city === "" ||
+            data.address?.city === ong.ongAddress?.city
+              ? undefined
+              : data.address?.city,
+          state:
+            data.address?.state === "" ||
+            data.address?.state === ong.ongAddress?.state
+              ? undefined
+              : data.address?.state,
+          latitude:
+            data.address?.latitude === "" ||
+            data.address?.latitude === ong.ongAddress?.latitude
+              ? undefined
+              : data.address?.latitude,
+          longitude:
+            data.address?.longitude === "" ||
+            data.address?.longitude === ong.ongAddress?.longitude
+              ? undefined
+              : data.address?.longitude,
         } as any,
-      }
-    }
+      },
+    },
   });
 
   return {
     message: `Ong updated successfully`,
-  }
-}
+  };
+};
 
 export const deleteOng = async (id: string) => {
   if (!id || id.length !== 36) throw new Error("Invalid id");
@@ -394,23 +445,23 @@ export const deleteOng = async (id: string) => {
     select: {
       name: true,
       status: true,
-    }
+    },
   });
 
   if (!ong) throw new Error("Ong not found");
 
-  if (ong.status === 'INACTIVE') throw new Error("Ong already deleted");
+  if (ong.status === "INACTIVE") throw new Error("Ong already deleted");
 
   await prisma.ong.update({
     where: {
       id: id,
     },
     data: {
-      status: 'INACTIVE',
-    }
+      status: "INACTIVE",
+    },
   });
 
   return {
     message: `Ong ${ong.name} deleted successfully`,
-  }
-}
+  };
+};
