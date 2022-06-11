@@ -2,6 +2,23 @@ import { NextFunction, Request, Response } from "express";
 import { IOng, IOngUpdate } from "../types/ong.types";
 import * as services from "@/api/services/ongs.service";
 
+export const checkIfExistOngByDocument = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { document } = req.body;
+  if (!document) return new Error("Missing required fields");
+
+  try {
+    const ong = await services.checkIfExistOngByDocument(document);
+    res.status(200).json(ong);
+  } catch (error: any) {
+    console.error("Error checking if ong exists: ", error);
+    next(error);
+  }
+};
+
 export const createOng = async (
   req: Request,
   res: Response,
@@ -24,9 +41,10 @@ export const loginOng = async (
   next: NextFunction
 ) => {
   const { document, password } = req.body;
+  if (!document || !password) return new Error("Missing required fields");
 
   try {
-    const ong = await services.loginOng(document, password);
+    const ong = await services.loginOng({ document, password });
     res.status(200).json(ong);
   } catch (error: any) {
     console.error("Error logging ong: ", error);
@@ -54,6 +72,7 @@ export const findOngById = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  if (!id) return new Error("Missing required fields");
 
   try {
     const ong = await services.findOngById(id);
@@ -95,6 +114,7 @@ export const updateOng = async (
 ) => {
   const { id } = req.params;
   const data = req.body as IOngUpdate;
+  if (!id) return new Error("Missing required fields");
 
   try {
     const ong = await services.updateOng(id, data);
@@ -111,6 +131,7 @@ export const deleteOng = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  if (!id) return new Error("Missing required fields");
 
   try {
     const ong = await services.deleteOng(id);

@@ -10,6 +10,28 @@ import { prisma } from "@/database/prismaClient";
 import { createToken } from "@/utils/jwt";
 import { IOng, IOngUpdate } from "../types/ong.types";
 
+export const checkIfExistOngByDocument = async (document: string) => {
+  const documentUnmasked = cpfCnpjUnmask(document);
+  if (!documentUnmasked) throw createError(400, "Invalid document");
+
+  const ong = await prisma.ong.findFirst({
+    where: {
+      document: documentUnmasked,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!ong) throw createError(404, "Ong not found");
+
+  if (ong.status !== "ACTIVE")
+    throw createError(403, "Ong not active, please contact the administrator");
+
+  return ong;
+};
+
 export const createOng = async (data: IOng) => {
   if (!data.name || !data.email || !data.password) {
     throw createError(400, "Missing required fields");

@@ -3,6 +3,12 @@ import * as controller from "@/api/controllers/users.controller";
 import { verifyAuthentication } from "../middlewares/authentication";
 
 const usersRoutes = (app: Express) => {
+  app.post(
+    "/users/check",
+    verifyAuthentication,
+    controller.checkIfUserExistsByDocument
+  );
+
   app.route("/users").post(controller.createUser);
 
   app.route("/users/login").post(controller.loginUser);
@@ -14,6 +20,6 @@ const usersRoutes = (app: Express) => {
   app.route("/users/:id").put(verifyAuthentication, controller.updateUser);
 
   app.route("/users/:id").delete(verifyAuthentication, controller.deleteUser);
-}
+};
 
 export default usersRoutes;

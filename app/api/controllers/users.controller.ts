@@ -2,6 +2,23 @@ import { Request, Response, NextFunction } from "express";
 import * as services from "@/api/services/users.service";
 import { IUser, IUserUpdate } from "../types/user.types";
 
+export const checkIfUserExistsByDocument = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { document } = req.body;
+  if (!document) return new Error("Missing required fields");
+
+  try {
+    const user = await services.checkIfUserExistsByDocument(document);
+    res.status(200).json(user);
+  } catch (error: any) {
+    console.error("Error checking if user exists: ", error);
+    next(error);
+  }
+};
+
 export const createUser = async (
   req: Request,
   res: Response,
@@ -24,6 +41,7 @@ export const loginUser = async (
   next: NextFunction
 ) => {
   const { document, password } = req.body;
+  if (!document || !password) return new Error("Missing required fields");
 
   try {
     const user = await services.loginUser({ document, password });
@@ -54,6 +72,7 @@ export const findUserById = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  if (!id) return new Error("Missing required fields");
 
   try {
     const user = await services.findUserById(id);
@@ -71,6 +90,7 @@ export const updateUser = async (
 ) => {
   const { id } = req.params;
   const data = req.body as IUserUpdate;
+  if (!id) return new Error("Invalid user id");
 
   try {
     const user = await services.updateUser(id, data);
@@ -87,6 +107,7 @@ export const deleteUser = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  if (!id) return new Error("Missing required fields");
 
   try {
     const user = await services.deleteUser(id);
