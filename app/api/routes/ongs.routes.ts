@@ -3,11 +3,7 @@ import * as controller from "@/api/controllers/ongs.controller";
 import { verifyAuthentication } from "../middlewares/authentication";
 
 const ongsRoutes = (app: Express) => {
-  app.post(
-    "/ongs/check",
-    verifyAuthentication,
-    controller.checkIfExistOngByDocument
-  );
+  app.post("/ongs/check", controller.checkIfExistOngByDocument);
 
   app.route("/ongs").post(controller.createOng);
 

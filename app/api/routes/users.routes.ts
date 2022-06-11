@@ -3,11 +3,7 @@ import * as controller from "@/api/controllers/users.controller";
 import { verifyAuthentication } from "../middlewares/authentication";
 
 const usersRoutes = (app: Express) => {
-  app.post(
-    "/users/check",
-    verifyAuthentication,
-    controller.checkIfUserExistsByDocument
-  );
+  app.post("/users/check", controller.checkIfUserExistsByDocument);
 
   app.route("/users").post(controller.createUser);
 
