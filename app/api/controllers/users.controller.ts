@@ -26,7 +26,7 @@ export const loginUser = async (
   const { document, password } = req.body;
 
   try {
-    const user = await services.loginUser(document, password);
+    const user = await services.loginUser({ document, password });
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error logging user: ", error);

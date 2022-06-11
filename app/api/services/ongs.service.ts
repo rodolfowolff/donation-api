@@ -104,7 +104,13 @@ export const createOng = async (data: IOng) => {
   };
 };
 
-export const loginOng = async (document: string, password: string) => {
+export const loginOng = async ({
+  document,
+  password,
+}: {
+  document: string;
+  password: string;
+}) => {
   if (!document || !password) throw createError(400, "Missing required fields");
 
   const documentUnmasked = cpfCnpjUnmask(document);

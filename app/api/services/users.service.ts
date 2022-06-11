@@ -106,7 +106,13 @@ export const createUser = async (data: IUser) => {
   };
 };
 
-export const loginUser = async (document: string, password: string) => {
+export const loginUser = async ({
+  document,
+  password,
+}: {
+  document: string;
+  password: string;
+}) => {
   if (!document || !password) throw createError(400, "Missing required fields");
 
   const documentUnmasked = cpfCnpjUnmask(document);
