@@ -34,17 +34,18 @@ export const checkIfExistOngByDocument = async (document: string) => {
 
 export const createOng = async (data: IOng) => {
   if (
-    !data ||
     !data.name ||
     !data.email ||
     !data.password ||
     !data.document ||
     !data.telephone ||
-    data.description
+    !data.description
   ) {
-    throw createError(400, "Missing required fields");
+    throw createError(
+      400,
+      "Missing required fields (name, email, password, document, telephone, description)"
+    );
   }
-
   // TODO: Create function to check data for validations (email, password, address, etc)
 
   if (data.name.length < 3 || data.name.length > 80) {

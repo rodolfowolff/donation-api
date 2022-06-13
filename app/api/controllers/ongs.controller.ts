@@ -25,6 +25,7 @@ export const createOng = async (
   next: NextFunction
 ) => {
   const data = req.body as IOng;
+  if (!data) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const createdOng = await services.createOng(data);

@@ -5,11 +5,13 @@ import { verifyAuthentication } from "../middlewares/authentication";
 const usersRoutes = (app: Express) => {
   app.post("/users/check", controller.checkIfUserExistsByDocument);
 
-  app.route("/users").post(controller.createUser);
+  app.route("/users/register").post(controller.createUser);
 
   app.route("/users/login").post(controller.loginUser);
 
-  app.route("/users").get(verifyAuthentication, controller.findAllUsers);
+  app
+    .route("/users/findall")
+    .get(verifyAuthentication, controller.findAllUsers);
 
   app.route("/users/:id").get(verifyAuthentication, controller.findUserById);
 
@@ -17,9 +19,7 @@ const usersRoutes = (app: Express) => {
 
   app.route("/users/:id").delete(verifyAuthentication, controller.deleteUser);
 
-  app
-    .route("/zipcode/:number")
-    .get(verifyAuthentication, controller.findAddressByZipCod);
+  app.route("/zipcode/:number").get(controller.findAddressByZipCod);
 };
 
 export default usersRoutes;

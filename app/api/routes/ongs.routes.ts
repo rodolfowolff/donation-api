@@ -5,11 +5,11 @@ import { verifyAuthentication } from "../middlewares/authentication";
 const ongsRoutes = (app: Express) => {
   app.post("/ongs/check", controller.checkIfExistOngByDocument);
 
-  app.route("/ongs").post(controller.createOng);
+  app.route("/ongs/register").post(controller.createOng);
 
   app.route("/ongs/login").post(controller.loginOng);
 
-  app.route("/ongs").get(verifyAuthentication, controller.findAllOngs);
+  app.route("/ongs/findall").get(verifyAuthentication, controller.findAllOngs);
 
   app
     .route("/ongs/distance")

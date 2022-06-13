@@ -26,6 +26,7 @@ export const createUser = async (
   next: NextFunction
 ) => {
   const data = req.body as IUser;
+  if (!data) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const createdUser = await services.createUser(data);
