@@ -40,6 +40,16 @@ export const updateFaq = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
+
   const data = req.body as IFaq;
 
   try {
@@ -57,6 +67,15 @@ export const deleteFaq = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
 
   try {
     const deletedFaq = await services.deleteFaq(id);

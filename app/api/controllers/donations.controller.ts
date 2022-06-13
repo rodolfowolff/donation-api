@@ -14,6 +14,15 @@ export const createDonaiton = async (
   const { id }: any = decodeToken(authorization as string);
   if (!id) throw new Error("Invalid token");
 
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
+
   try {
     const createdFaq = await services.createDonation(id, data);
     res.status(201).json(createdFaq);
@@ -32,6 +41,15 @@ export const getUserDonation = async (
   const { id }: any = decodeToken(authorization as string);
 
   if (!id) throw new Error("Invalid token");
+
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
 
   try {
     const donations = await services.getUserDonation(id);
@@ -52,6 +70,15 @@ export const listOngDonations = async (
 
   if (!id) throw new Error("Invalid token");
 
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
+
   try {
     const donations = await services.listOngDonations(id);
     res.status(200).json(donations);
@@ -70,6 +97,15 @@ export const getDonation = async (
   const { id }: any = decodeToken(authorization as string);
 
   if (!id) throw new Error("Invalid token");
+
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
 
   const donationId = req.params.id;
 
@@ -92,6 +128,15 @@ export const updateDonation = async (
 
   if (!id) throw new Error("Invalid token");
 
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
+
   const donationId = req.params.id;
   const data = req.body as IDonation;
 
@@ -113,6 +158,15 @@ export const deleteDonation = async (
   const { id }: any = decodeToken(authorization as string);
 
   if (!id) throw new Error("Invalid token");
+
+  if (!id) return res.status(400).json({ error: "Missing required fields" });
+
+  if (
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    return res.status(400).json({ error: "Invalid id code" });
 
   const donationId = req.params.id;
 
