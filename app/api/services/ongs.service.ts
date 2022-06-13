@@ -33,7 +33,15 @@ export const checkIfExistOngByDocument = async (document: string) => {
 };
 
 export const createOng = async (data: IOng) => {
-  if (!data.name || !data.email || !data.password) {
+  if (
+    !data ||
+    !data.name ||
+    !data.email ||
+    !data.password ||
+    !data.document ||
+    !data.telephone ||
+    data.description
+  ) {
     throw createError(400, "Missing required fields");
   }
 
@@ -62,6 +70,17 @@ export const createOng = async (data: IOng) => {
     throw createError(
       400,
       "Password must be at least 8 characters and less than 20 characters"
+    );
+  }
+
+  if (cpfCnpjUnmask(data.document).length !== 14) {
+    throw createError(400, "Cnpj must be 14 characters long");
+  }
+
+  if (data.address.state.length !== 2) {
+    throw createError(
+      400,
+      "State must be 2 characters long and must be a valid state"
     );
   }
 
@@ -114,8 +133,8 @@ export const createOng = async (data: IOng) => {
           neighborhood: data.address.neighborhood,
           city: data.address.city,
           state: data.address.state,
-          latitude: data.address.latitude,
-          longitude: data.address.longitude,
+          latitude: data.address.latitude || null,
+          longitude: data.address.longitude || null,
         },
       },
     },

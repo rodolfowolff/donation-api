@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as services from "@/api/services/users.service";
 import { IUser, IUserUpdate } from "../types/user.types";
+import findZipCode from "@/utils/findZipCode";
 
 export const checkIfUserExistsByDocument = async (
   req: Request,
@@ -114,6 +115,23 @@ export const deleteUser = async (
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error delete user: ", error);
+    next(error);
+  }
+};
+
+export const findAddressByZipCod = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { number } = req.params;
+  if (!number) return new Error("Missing required fields");
+
+  try {
+    const { data } = await findZipCode.get(`/${number}`);
+    res.status(200).json(data);
+  } catch (error: any) {
+    console.error("Error find zip code: ", error);
     next(error);
   }
 };

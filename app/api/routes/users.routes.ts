@@ -16,6 +16,10 @@ const usersRoutes = (app: Express) => {
   app.route("/users/:id").put(verifyAuthentication, controller.updateUser);
 
   app.route("/users/:id").delete(verifyAuthentication, controller.deleteUser);
+
+  app
+    .route("/zipcode/:number")
+    .get(verifyAuthentication, controller.findAddressByZipCod);
 };
 
 export default usersRoutes;
