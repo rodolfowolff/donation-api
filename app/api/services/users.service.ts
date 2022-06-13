@@ -38,7 +38,8 @@ export const createUser = async (data: IUser) => {
     !data.lastName ||
     !data.document ||
     !data.email ||
-    !data.password
+    !data.password ||
+    !data.telephone
   ) {
     throw createError(400, "Missing required fields");
   }
@@ -74,6 +75,10 @@ export const createUser = async (data: IUser) => {
       400,
       "Password must be at least 8 characters and less than 20 characters"
     );
+  }
+
+  if (telephoneUnmask(data.telephone).length !== 11) {
+    throw createError(400, "Telephone must be 11 characters long");
   }
 
   const verifyIfUserExists = await prisma.user.findFirst({

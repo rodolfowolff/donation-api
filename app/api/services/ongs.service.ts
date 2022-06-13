@@ -78,6 +78,10 @@ export const createOng = async (data: IOng) => {
     throw createError(400, "Cnpj must be 14 characters long");
   }
 
+  if (telephoneUnmask(data.telephone).length !== 11) {
+    throw createError(400, "Telephone must be 11 characters long");
+  }
+
   if (data.address.state.length !== 2) {
     throw createError(
       400,
@@ -103,10 +107,10 @@ export const createOng = async (data: IOng) => {
   }
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
-  const documentUnmasked = cpfCnpjUnmask(data.document);
-  const phoneUnmasked = telephoneUnmask(data.phone);
+  const documentUnmasked = cpfCnpjUnmask(data.document || "");
+  const phoneUnmasked = telephoneUnmask(data.phone || "");
   const telephoneUnmasked = telephoneUnmask(data.telephone);
-  const cepUnmasked = cepUnmask(data.address.zipCode);
+  const cepUnmasked = cepUnmask(data.address.zipCode || "");
 
   await prisma.ong.create({
     data: {
@@ -117,12 +121,12 @@ export const createOng = async (data: IOng) => {
         create: {
           email: data.email,
           description: data.description,
-          banner: data.banner,
-          phone: phoneUnmasked,
+          banner: data.banner || null,
+          phone: phoneUnmasked || null,
           telephone: telephoneUnmasked,
-          website: data.website,
-          facebook: data.facebook,
-          instagram: data.instagram,
+          website: data.website || null,
+          facebook: data.facebook || null,
+          instagram: data.instagram || null,
         },
       },
       ongAddress: {
