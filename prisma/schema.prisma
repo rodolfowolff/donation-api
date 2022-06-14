@@ -77,10 +77,11 @@ model OngPersonalData {
   id          String    @id @default(uuid())
   ongId       String    @unique
   email       String    @unique @db.VarChar(50)
-  description String    @db.VarChar(200)
+  description String    @db.Text
   banner      String?   @db.VarChar(200)
   phone       String?   @db.VarChar(10)
   telephone   String    @db.VarChar(11)
+  responsible String    @db.VarChar(50)
   website     String?   @db.VarChar(50)
   facebook    String?   @db.VarChar(50)
   instagram   String?   @db.VarChar(50)

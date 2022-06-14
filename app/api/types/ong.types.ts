@@ -15,7 +15,7 @@ interface IOngAddressUpdate {
   street?: string | null;
   number?: string | null;
   complement?: string | null;
-  neighborhood?: string  | null;
+  neighborhood?: string | null;
   city?: string | null;
   state?: string | null;
   latitude?: string | null;
@@ -36,6 +36,7 @@ export interface IOng {
   facebook: string;
   instagram: string;
   address: IOngAddress;
+  responsible: string;
 }
 
 export interface IOngUpdate {

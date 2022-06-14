@@ -77,6 +77,7 @@ export const createOng = async (data: IOng) => {
           website: data.website,
           facebook: data.facebook,
           instagram: data.instagram,
+          responsible: data.responsible,
         },
       },
       ongAddress: {
