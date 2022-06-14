@@ -14,22 +14,28 @@ export const checkIfExistOngByDocument = async (document: string) => {
   const documentUnmasked = cpfCnpjUnmask(document);
   if (!documentUnmasked) throw createError(400, "Invalid document");
 
-  const ong = await prisma.ong.findFirst({
+  const ongExist = await prisma.ong.findFirst({
     where: {
       document: documentUnmasked,
     },
     select: {
-      id: true,
+      name: true,
       status: true,
     },
   });
 
-  if (!ong) throw createError(404, "Ong not found");
+  if (!ongExist)
+    return {
+      status: false,
+    };
 
-  if (ong.status !== "ACTIVE")
+  if (ongExist.status !== "ACTIVE")
     throw createError(403, "Ong not active, please contact the administrator");
 
-  return ong;
+  return {
+    status: true,
+    name: ongExist.name,
+  };
 };
 
 export const createOng = async (data: IOng) => {
@@ -112,7 +118,7 @@ export const createOng = async (data: IOng) => {
   const telephoneUnmasked = telephoneUnmask(data.telephone);
   const cepUnmasked = cepUnmask(data.address.zipCode || "");
 
-  await prisma.ong.create({
+  const createOng = await prisma.ong.create({
     data: {
       name: data.name,
       document: documentUnmasked,
@@ -145,8 +151,11 @@ export const createOng = async (data: IOng) => {
     },
   } as any);
 
+  const token = createToken({ id: createOng.id });
+
   return {
-    message: "Ong created successfully",
+    ong: createOng.name,
+    token,
   };
 };
 

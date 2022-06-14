@@ -11,25 +11,31 @@ import { createToken } from "@/utils/jwt";
 import createError from "http-errors";
 
 export const checkIfUserExistsByDocument = async (document: string) => {
-  const documentUnmasked = cpfCnpjUnmask(document);
+  const documentUnmasked = cpfCnpjUnmask(document || "");
   if (!documentUnmasked) throw createError(400, "Invalid document");
 
-  const user = await prisma.user.findFirst({
+  const userExist = await prisma.user.findFirst({
     where: {
       document: documentUnmasked,
     },
     select: {
-      id: true,
+      firstName: true,
       status: true,
     },
   });
 
-  if (!user) throw createError(404, "User not found");
+  if (!userExist)
+    return {
+      status: false,
+    };
 
-  if (user.status !== "ACTIVE")
+  if (userExist.status !== "ACTIVE")
     throw createError(403, "User not active, please contact the administrator");
 
-  return user;
+  return {
+    status: true,
+    name: userExist.firstName,
+  };
 };
 
 export const createUser = async (data: IUser) => {
@@ -101,7 +107,7 @@ export const createUser = async (data: IUser) => {
   const telephoneUnmasked = telephoneUnmask(data.telephone);
   const cepUnmasked = cepUnmask(data.address.zipCode);
 
-  await prisma.user.create({
+  const createUser = await prisma.user.create({
     data: {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -128,8 +134,13 @@ export const createUser = async (data: IUser) => {
     },
   } as any);
 
+  if (!createUser) throw createError(500, "Error creating user");
+
+  const token = createToken({ id: createUser.id });
+
   return {
-    message: "User created successfully",
+    user: createUser.firstName,
+    token,
   };
 };
 
