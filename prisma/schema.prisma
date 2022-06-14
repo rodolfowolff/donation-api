@@ -11,7 +11,7 @@ model User {
   id               String            @id @default(uuid())
   firstName        String            @db.VarChar(20)
   lastName         String            @db.VarChar(20)
-  email            String            @unique @db.VarChar(50)
+  document         String            @unique @db.VarChar(11)
   password         String            @db.VarChar(100)
   status           Status            @default(ACTIVE)
   createdAt        DateTime          @default(now())
@@ -26,7 +26,7 @@ model User {
 model UserPersonalData {
   id        String    @id @default(uuid())
   userId    String    @unique
-  document  String    @unique @db.VarChar(11)
+  email     String    @unique @db.VarChar(50)
   birthDate String    @db.VarChar(10)
   telephone String    @db.VarChar(11)
   createdAt DateTime  @default(now())
@@ -60,7 +60,7 @@ model UserAddress {
 model Ong {
   id        String    @id @default(uuid())
   name      String    @db.VarChar(80)
-  email     String    @unique @db.VarChar(50)
+  document  String    @unique @db.VarChar(14)
   password  String    @db.VarChar(100)
   status    Status    @default(ACTIVE)
   createdAt DateTime  @default(now())
@@ -76,7 +76,7 @@ model Ong {
 model OngPersonalData {
   id          String    @id @default(uuid())
   ongId       String    @unique
-  document    String    @unique @db.VarChar(14)
+  email       String    @unique @db.VarChar(50)
   description String    @db.VarChar(200)
   banner      String?   @db.VarChar(200)
   phone       String?   @db.VarChar(10)
