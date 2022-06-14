@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { base64Decode } from '@/utils/base64';
-import dotenv from 'dotenv';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { base64Decode } from "@/utils/base64";
+import createError from "http-errors";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -10,67 +11,80 @@ export const decodeToken = (token: string) => {
   let data = null;
   if (parts.length === 2) {
     const credentials = parts[1];
-    jwt.verify(credentials,  process.env.JWT_SECRET || 'secretDev', (err, decoded) => {
-      if (err) return null;
-      data = decoded;
-    });
+    jwt.verify(
+      credentials,
+      process.env.JWT_SECRET || "secretDev",
+      (err, decoded) => {
+        if (err) return null;
+        data = decoded;
+      }
+    );
     return data;
   }
-  jwt.verify(parts[0],  process.env.JWT_SECRET || 'secretDev', (err, decoded) => {
-    if (err) return null;
-    data = decoded;
-  });
+  jwt.verify(
+    parts[0],
+    process.env.JWT_SECRET || "secretDev",
+    (err, decoded) => {
+      if (err) return null;
+      data = decoded;
+    }
+  );
   return data;
-}
+};
 
 const verifyJWT = (authorization: string) => {
-  const parts = authorization.split(' ');
+  const parts = authorization.split(" ");
   const [schema, token] = parts;
 
   if (!/^Bearer$/i.test(schema)) {
     return {
-      error: 'Invalid schema',
-    }
+      error: "Invalid schema",
+    };
   }
 
   let tokenError = "";
-  jwt.verify(token, process.env.JWT_SECRET || 'secretDev', (err) => {
+  jwt.verify(token, process.env.JWT_SECRET || "secretDev", (err) => {
     if (err) {
-        tokenError = err.message;
-      }
-    });
-
-    if (tokenError) {
-      return {
-        error: tokenError,
-      }
+      tokenError = err.message;
     }
+  });
 
-    return {
-      message: 'Token is valid',
-    }
-}
+  if (tokenError) {
+    throw createError(403, `Invalid token: ${tokenError}`);
+  }
 
-export const verifyAuthentication = (req: Request, res: Response, next: NextFunction) => {
+  return {
+    message: "Token is valid",
+  };
+};
+
+export const verifyAuthentication = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
-    return res.status(401).json({ error: 'Token not provided' });
+    throw createError(401, "Token not provided");
   }
 
-  const parts = authorization.split(' ');
+  const parts = authorization.split(" ");
   const [scheme, token] = parts;
 
   if (scheme && !/^Basic$/i.test(scheme) && !/^Bearer$/i.test(scheme)) {
-    return res.status(401).json({ error: 'Token malformatted' });
+    throw createError(403, "Token malformatted");
   }
 
-  if (scheme === 'Basic') {
-    const decoded = base64Decode(token).split(':');
+  if (scheme === "Basic") {
+    const decoded = base64Decode(token).split(":");
     const [username, password] = decoded;
 
-    if (username !== process.env.BASIC_AUTH_USERNAME || password !== process.env.BASIC_AUTH_PASSWORD) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (
+      username !== process.env.BASIC_AUTH_USERNAME ||
+      password !== process.env.BASIC_AUTH_PASSWORD
+    ) {
+      throw createError(403, "Invalid credentials");
     }
 
     return next();
@@ -79,8 +93,9 @@ export const verifyAuthentication = (req: Request, res: Response, next: NextFunc
     const decodedToken = decodeToken(token);
 
     if (!decodedToken) {
-      return res.status(401).json({ error });
+      throw createError(403, `${error}`);
     }
   }
+
   next();
-}
+};
