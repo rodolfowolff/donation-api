@@ -9,7 +9,8 @@ export const checkIfUserExistsByDocument = async (
   next: NextFunction
 ) => {
   const { document } = req.body;
-  if (!document) return new Error("Missing required fields");
+  if (!document)
+    return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const user = await services.checkIfUserExistsByDocument(document);
@@ -43,7 +44,8 @@ export const loginUser = async (
   next: NextFunction
 ) => {
   const { document, password } = req.body;
-  if (!document || !password) return new Error("Missing required fields");
+  if (!document || !password)
+    return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const user = await services.loginUser({ document, password });
@@ -74,15 +76,7 @@ export const findUserById = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-
   if (!id) return res.status(400).json({ error: "Missing required fields" });
-
-  if (
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    return res.status(400).json({ error: "Invalid id code" });
 
   try {
     const user = await services.findUserById(id);
@@ -99,17 +93,10 @@ export const updateUser = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-
   if (!id) return res.status(400).json({ error: "Missing required fields" });
 
-  if (
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    return res.status(400).json({ error: "Invalid id code code" });
-
   const data = req.body as IUserUpdate;
+  if (!data) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const user = await services.updateUser(id, data);
@@ -126,15 +113,7 @@ export const deleteUser = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-
   if (!id) return res.status(400).json({ error: "Missing required fields" });
-
-  if (
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    return res.status(400).json({ error: "Invalid id code" });
 
   try {
     const user = await services.deleteUser(id);
@@ -151,7 +130,6 @@ export const findAddressByZipCod = async (
   next: NextFunction
 ) => {
   const { number } = req.params;
-
   if (!number)
     return res.status(400).json({ error: "Missing required fields" });
   if (!number.match(/^[0-9]{8}$/))

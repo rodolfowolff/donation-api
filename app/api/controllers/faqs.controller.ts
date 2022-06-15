@@ -8,6 +8,7 @@ export const createFaq = async (
   next: NextFunction
 ) => {
   const data = req.body as IFaq;
+  if (!data) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const createdFaq = await services.createFaq(data);
@@ -24,6 +25,7 @@ export const getAllFaqs = async (
   next: NextFunction
 ) => {
   const { type } = req.query as { type: IFaq["type"] };
+  if (!type) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const faqs = await services.getAllFaqs(type);
@@ -40,17 +42,10 @@ export const updateFaq = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-
   if (!id) return res.status(400).json({ error: "Missing required fields" });
 
-  if (
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    return res.status(400).json({ error: "Invalid id code" });
-
   const data = req.body as IFaq;
+  if (!data) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const updatedFaq = await services.updateFaq(id, data);
@@ -67,15 +62,7 @@ export const deleteFaq = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-
   if (!id) return res.status(400).json({ error: "Missing required fields" });
-
-  if (
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    return res.status(400).json({ error: "Invalid id code" });
 
   try {
     const deletedFaq = await services.deleteFaq(id);

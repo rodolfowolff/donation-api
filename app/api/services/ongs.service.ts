@@ -65,7 +65,8 @@ export const createOng = async (data: IOng) => {
     !data.email.includes("@") ||
     !data.email.includes(".") ||
     data.email.length < 5 ||
-    data.email.length > 50
+    data.email.length > 50 ||
+    !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i)
   ) {
     throw createError(
       400,
@@ -274,7 +275,13 @@ export const findAllOngs = async () => {
 };
 
 export const findOngById = async (id: string) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findFirst({
     where: {
@@ -370,7 +377,13 @@ export const findOngByDistance = async ({
 };
 
 export const updateOng = async (id: string, data: IOngUpdate) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {
@@ -502,7 +515,13 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
 };
 
 export const deleteOng = async (id: string) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {

@@ -11,6 +11,7 @@ import ongsRoutes from "@/api/routes/ongs.routes";
 import faqsRoutes from "@/api/routes/faqs.routes";
 import ongBankRoutes from "@/api/routes/ongBank.routes";
 import donationsRoutes from "@/api/routes/donations.routes";
+import commentsRoutes from "@/api/routes/comments.routes";
 
 export default (): Express => {
   const app = express();
@@ -26,6 +27,7 @@ export default (): Express => {
   faqsRoutes(app);
   ongBankRoutes(app);
   donationsRoutes(app);
+  commentsRoutes(app);
 
   // Error Handler
   app.use((_req: Request, _res: Response, next: NextFunction) => {

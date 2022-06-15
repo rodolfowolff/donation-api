@@ -6,7 +6,13 @@ import { findOngById } from "@/api/services/ongs.service";
 import { cpfCnpjUnmask } from "js-essentials-functions";
 
 export const createOngBank = async (id: string, data: IOngBank) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   if (
     !data.bankName ||
@@ -60,7 +66,13 @@ export const createOngBank = async (id: string, data: IOngBank) => {
 };
 
 export const getOngBank = async (id: string) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await findOngById(id as any);
   if (!ong) throw createError(404, "Ong not found");
@@ -88,7 +100,13 @@ export const getOngBank = async (id: string) => {
 };
 
 export const updateOngBank = async (id: string, data: IOngBank) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await findOngById(id as any);
   if (!ong) throw createError(404, "Ong not found");
@@ -179,7 +197,13 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
 };
 
 export const deleteOngBank = async (id: string) => {
-  if (!id || id.length !== 36) throw createError(400, "Invalid id");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await findOngById(id as any);
   if (!ong) throw createError(404, "Ong not found");

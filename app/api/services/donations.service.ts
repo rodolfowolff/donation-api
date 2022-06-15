@@ -6,14 +6,20 @@ import { findUserById } from "../services/users.service";
 import { findOngById } from "@/api/services/ongs.service";
 
 export const createDonation = async (user: string, data: IDonation) => {
-  if (
-    !user ||
-    !data.ongId ||
-    !data.value ||
-    user.length !== 36 ||
-    data.ongId.length !== 36
-  )
+  if (!data.ongId || !data.value)
     throw createError(400, "ong and value are required");
+
+  if (
+    user.length !== 36 ||
+    !user.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    ) ||
+    data.ongId.length !== 36 ||
+    !data.ongId.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const checkExistUser = await findUserById(user);
   if (!checkExistUser) throw createError(404, "User not found");
@@ -60,7 +66,13 @@ export const createDonation = async (user: string, data: IDonation) => {
 };
 
 export const getUserDonation = async (user: string) => {
-  if (!user || user.length !== 36) throw createError(400, "user is required");
+  if (
+    user.length !== 36 ||
+    !user.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const checkExistUser = await findUserById(user);
   if (!checkExistUser) throw createError(404, "User not found");
@@ -85,7 +97,13 @@ export const getUserDonation = async (user: string) => {
 };
 
 export const listOngDonations = async (id: string) => {
-  if (!id || id.length !== 36) throw createError(400, "ong is required");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await findOngById(id);
   if (!ong) throw createError(404, "Ong not found or not authorized");
@@ -110,8 +128,13 @@ export const listOngDonations = async (id: string) => {
 };
 
 export const getDonation = async (id: string, donationId: string) => {
-  if (!id || id.length !== 36 || !donationId || donationId.length !== 36)
-    throw createError(400, "ong and donation is required");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const donation = await prisma.donation.findFirst({
     where: {
@@ -148,7 +171,13 @@ export const updateDonation = async (
   donationId: string,
   data: IDonation
 ) => {
-  if (!id || id.length !== 36) throw createError(400, "ong is required");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await findOngById(id);
   if (!ong) throw createError(404, "Ong not found or not authorized");
@@ -173,7 +202,13 @@ export const updateDonation = async (
 };
 
 export const deleteDonation = async (id: string, donationId: string) => {
-  if (!id || id.length !== 36) throw createError(400, "ong is required");
+  if (
+    id.length !== 36 ||
+    !id.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  )
+    throw createError(400, "Invalid id");
 
   const ong = await findOngById(id);
   if (!ong) throw createError(404, "Ong not found or not authorized");

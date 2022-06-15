@@ -19,6 +19,7 @@ model User {
   deletedAt        DateTime?
   userPersonalData UserPersonalData?
   userAddress      UserAddress?
+  comments         Comment[]
 
   @@map("users")
 }
@@ -70,6 +71,8 @@ model Ong {
   ongPersonalData OngPersonalData?
   ongAddress      OngAddress?
   ongBankAccount  OngBankAccount?
+  comments        Comment[]
+
   @@map("ongs")
 }
 
@@ -159,6 +162,22 @@ model Faq {
   deletedAt DateTime?
 
   @@map("faqs")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  userId    String    @db.VarChar(36)
+  ongId     String    @db.VarChar(36)
+  comment   String    @db.Text
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user      User      @relation(fields: [userId], references: [id])
+  ong       Ong       @relation(fields: [ongId], references: [id])
+
+  @@map("comments")
 }
 
 enum Status {
