@@ -218,21 +218,22 @@ export const loginOng = async ({
   };
 };
 
-export const findAllOngs = async () => {
+export const findAllOngs = async (name?: string) => {
   return await prisma.ong.findMany({
     where: {
       status: "ACTIVE",
+      name: {
+        contains: name || "",
+        mode: "insensitive",
+      },
     },
     select: {
       id: true,
       name: true,
       ongPersonalData: {
         select: {
-          email: true,
-          //     birthDate: true,
-          //     document: true,
-          //     phone: true,
-          //     telephone: true,
+          description: true,
+          banner: true,
         },
       },
       // ongAddress: {
@@ -294,6 +295,8 @@ export const findOngById = async (id: string) => {
       ongPersonalData: {
         select: {
           email: true,
+          description: true,
+          banner: true,
           //     birthDate: true,
           //     document: true,
           //     phone: true,
@@ -324,17 +327,27 @@ export const findOngById = async (id: string) => {
       //     pixKey: true,
       //   }
       // },
-      // donation: {
-      //   select: {
-      //     id: true,
-      //     userId: true,
-      //     value: true,
-      //     type: true,
-      //     status: true,
-      //     createdAt: true,
-      //     updatedAt: true,
-      //   }
-      // }
+      donations: {
+        select: {
+          id: true,
+          //     userId: true,
+          //     value: true,
+          //     type: true,
+          //     status: true,
+          //     createdAt: true,
+          //     updatedAt: true,
+        },
+      },
+      comments: {
+        select: {
+          comment: true,
+          user: {
+            select: {
+              firstName: true,
+            },
+          },
+        },
+      },
     },
   });
 

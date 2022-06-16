@@ -56,12 +56,14 @@ export const loginOng = async (
 };
 
 export const findAllOngs = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const ongs = await services.findAllOngs();
+    const { name } = req.query;
+
+    const ongs = await services.findAllOngs(name as string);
     res.status(200).json(ongs);
   } catch (error: any) {
     console.error("Error find all ongs: ", error);

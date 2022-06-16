@@ -20,6 +20,7 @@ model User {
   userPersonalData UserPersonalData?
   userAddress      UserAddress?
   comments         Comment[]
+  donations        Donation[]
 
   @@map("users")
 }
@@ -72,6 +73,7 @@ model Ong {
   ongAddress      OngAddress?
   ongBankAccount  OngBankAccount?
   comments        Comment[]
+  donations       Donation[]
 
   @@map("ongs")
 }
@@ -147,6 +149,9 @@ model Donation {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?
+
+  user      User      @relation(fields: [userId], references: [id])
+  ong       Ong       @relation(fields: [ongId], references: [id])
 
   @@map("donations")
 }
