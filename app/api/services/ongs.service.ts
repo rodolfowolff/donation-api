@@ -341,6 +341,7 @@ export const findOngById = async (id: string) => {
       comments: {
         select: {
           comment: true,
+          createdAt: true,
           user: {
             select: {
               firstName: true,

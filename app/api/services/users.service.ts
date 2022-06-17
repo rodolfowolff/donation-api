@@ -68,8 +68,8 @@ export const createUser = async (data: IUser) => {
     !data.email.includes("@") ||
     !data.email.includes(".") ||
     data.email.length < 5 ||
-    data.email.length > 50 ||
-    !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i)
+    data.email.length > 50
+    // !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i)
   ) {
     throw createError(400, "Email must be valid");
   }
@@ -246,12 +246,13 @@ export const findUserById = async (id: string) => {
     select: {
       id: true,
       firstName: true,
+      lastName: true,
+      document: true,
       userPersonalData: {
         select: {
           email: true,
-          //     birthDate: true,
-          //     document: true,
-          //     telephone: true,
+          birthDate: true,
+          telephone: true,
         },
       },
       // userAddress: {
@@ -290,6 +291,7 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
       status: true,
       userPersonalData: {
         select: {
+          email: true,
           telephone: true,
         },
       },
@@ -314,14 +316,23 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
   }
 
   if (
-    telephoneUnmask(data.telephone as string) ===
-      user.userPersonalData?.telephone &&
-    cepUnmask(data.address?.zipCode as string) === user.userAddress?.zipCode &&
+    (!data.email || data.email !== user.userPersonalData?.email) &&
+    (!data.telephone ||
+      telephoneUnmask(data.telephone || "") ===
+        user.userPersonalData?.telephone) &&
+    (!data.address?.zipCode ||
+      cepUnmask(data.address?.zipCode || "") === user.userAddress?.zipCode) &&
+    !data.address?.street &&
     data.address?.street === user.userAddress?.street &&
+    !data.address?.number &&
     data.address?.number === user.userAddress?.number &&
+    !data.address?.complement &&
     data.address?.complement === user.userAddress?.complement &&
+    !data.address?.neighborhood &&
     data.address?.neighborhood === user.userAddress?.neighborhood &&
+    !data.address?.city &&
     data.address?.city === user.userAddress?.city &&
+    !data.address?.state &&
     data.address?.state === user.userAddress?.state
   ) {
     throw createError(400, "Address not changed");
@@ -334,49 +345,54 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
     data: {
       userPersonalData: {
         update: {
+          email:
+            !data.email ||
+            data.email === "" ||
+            data.email === user.userPersonalData?.email
+              ? undefined
+              : data.email,
           telephone:
+            !data.telephone ||
             data.telephone === "" ||
-            telephoneUnmask(data.telephone as string) ===
+            telephoneUnmask(data.telephone || "") ===
               user.userPersonalData?.telephone
-              ? null
-              : telephoneUnmask(data.telephone as string),
+              ? undefined
+              : telephoneUnmask(data.telephone || ""),
         } as any,
       },
       userAddress: {
         update: {
           zipCode:
-            data.address?.zipCode === "" ||
-            cepUnmask(data.address?.zipCode as string) ===
-              user.userAddress?.zipCode
+            !data.address?.zipCode ||
+            cepUnmask(data.address?.zipCode || "") === user.userAddress?.zipCode
               ? undefined
-              : cepUnmask(data.address?.zipCode as string),
+              : cepUnmask(data.address?.zipCode || ""),
           street:
-            data.address?.street === "" ||
+            !data.address?.street ||
             data.address?.street === user.userAddress?.street
               ? undefined
               : data.address?.street,
           number:
-            data.address?.number === "" ||
+            !data.address?.number ||
             data.address?.number === user.userAddress?.number
               ? undefined
               : data.address?.number,
           complement:
-            data.address?.complement === "" ||
+            !data.address?.complement ||
             data.address?.complement === user.userAddress?.complement
               ? undefined
               : data.address?.complement,
           neighborhood:
-            data.address?.neighborhood === "" ||
+            !data.address?.neighborhood ||
             data.address?.neighborhood === user.userAddress?.neighborhood
               ? undefined
               : data.address?.neighborhood,
           city:
-            data.address?.city === "" ||
-            data.address?.city === user.userAddress?.city
+            !data.address?.city || data.address?.city === user.userAddress?.city
               ? undefined
               : data.address?.city,
           state:
-            data.address?.state === "" ||
+            !data.address?.state ||
             data.address?.state === user.userAddress?.state
               ? undefined
               : data.address?.state,

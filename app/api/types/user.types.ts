@@ -13,7 +13,7 @@ interface IUserAddressUpdate {
   street?: string | null;
   number?: string | null;
   complement?: string | null;
-  neighborhood?: string  | null;
+  neighborhood?: string | null;
   city?: string | null;
   state?: string | null;
 }
@@ -31,6 +31,7 @@ export interface IUser {
 }
 
 export interface IUserUpdate {
+  email?: string | null;
   telephone?: string | null;
   address?: IUserAddressUpdate | null;
 }

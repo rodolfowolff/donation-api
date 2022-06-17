@@ -18,8 +18,6 @@ export const createComment = async (
   const data = req.body as IComments;
   if (!data) return res.status(400).json({ error: "Missing required fields" });
 
-  console.log("data controller: ", data, "id", id);
-
   try {
     const createdComments = await services.createComment(id, data);
     res.status(201).json(createdComments);
