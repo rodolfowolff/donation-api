@@ -66,6 +66,7 @@ export const createDonation = async (user: string, data: IDonation) => {
 };
 
 export const getUserDonation = async (user: string) => {
+  console.log("user", user);
   if (
     user.length !== 36 ||
     !user.match(
@@ -86,14 +87,30 @@ export const getUserDonation = async (user: string) => {
     },
     select: {
       id: true,
+      ongId: true,
       value: true,
       type: true,
       status: true,
       createdAt: true,
+      ong: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 
-  return donations;
+  return donations.map((donation) => {
+    return {
+      ...donation,
+      value: Number(donation.value).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        minimumFractionDigits: 2,
+      }),
+    };
+  });
 };
 
 export const listOngDonations = async (id: string) => {

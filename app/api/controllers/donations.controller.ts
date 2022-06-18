@@ -32,11 +32,7 @@ export const getUserDonation = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { authorization } = req.headers;
-  if (!authorization)
-    return res.status(400).json({ error: "Missing required fields" });
-
-  const { id }: any = decodeToken(authorization as string);
+  const { id } = req.params;
   if (!id) return res.status(400).json({ error: "Missing required fields" });
 
   try {
