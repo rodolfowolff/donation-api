@@ -1,24 +1,15 @@
 import createError from "http-errors";
-
-import { IDonation } from "../types/donation.type";
+import { IDonation } from "@/api/types/donation.type";
+import { verifyUUID } from "@/utils/validators";
 import { prisma } from "@/database/prismaClient";
-import { findUserById } from "../services/users.service";
+import { findUserById } from "@/api/services/users.service";
 import { findOngById } from "@/api/services/ongs.service";
 
 export const createDonation = async (user: string, data: IDonation) => {
   if (!data.ongId || !data.value)
     throw createError(400, "ong and value are required");
 
-  if (
-    user.length !== 36 ||
-    !user.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    ) ||
-    data.ongId.length !== 36 ||
-    !data.ongId.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
+  if (!verifyUUID(user) || !verifyUUID(data.ongId))
     throw createError(400, "Invalid id");
 
   const checkExistUser = await findUserById(user);
@@ -66,13 +57,7 @@ export const createDonation = async (user: string, data: IDonation) => {
 };
 
 export const getUserDonation = async (user: string) => {
-  if (
-    user.length !== 36 ||
-    !user.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(user)) throw createError(400, "Invalid id");
 
   const checkExistUser = await findUserById(user);
   if (!checkExistUser) throw createError(404, "User not found");
@@ -113,13 +98,7 @@ export const getUserDonation = async (user: string) => {
 };
 
 export const listOngDonations = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await findOngById(id);
   if (!ong) throw createError(404, "Ong not found or not authorized");
@@ -144,12 +123,7 @@ export const listOngDonations = async (id: string) => {
 };
 
 export const getDonation = async (id: string, donationId: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
+  if (!verifyUUID(id) || !verifyUUID(donationId))
     throw createError(400, "Invalid id");
 
   const donation = await prisma.donation.findFirst({
@@ -187,12 +161,7 @@ export const updateDonation = async (
   donationId: string,
   data: IDonation
 ) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
+  if (!verifyUUID(id) || !verifyUUID(donationId))
     throw createError(400, "Invalid id");
 
   const ong = await findOngById(id);
@@ -218,12 +187,7 @@ export const updateDonation = async (
 };
 
 export const deleteDonation = async (id: string, donationId: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
+  if (!verifyUUID(id) || !verifyUUID(donationId))
     throw createError(400, "Invalid id");
 
   const ong = await findOngById(id);

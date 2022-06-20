@@ -1,25 +1,19 @@
 import createError from "http-errors";
-
 import { IOngBank } from "../types/ongBank.type";
 import { prisma } from "@/database/prismaClient";
 import { findOngById } from "@/api/services/ongs.service";
+import { verifyUUID } from "@/utils/validators";
 import { cpfCnpjUnmask } from "js-essentials-functions";
 
 export const createOngBank = async (id: string, data: IOngBank) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   if (
     !data.bankName ||
     !data.agency ||
     !data.account ||
     !data.owner ||
-    !cpfCnpjUnmask(data.ownerDocument) ||
+    !data.ownerDocument ||
     !data.pixKeyType ||
     !data.pixKey
   )
@@ -66,13 +60,7 @@ export const createOngBank = async (id: string, data: IOngBank) => {
 };
 
 export const getOngBank = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await findOngById(id as any);
   if (!ong) throw createError(404, "Ong not found");
@@ -80,6 +68,7 @@ export const getOngBank = async (id: string) => {
   const ongBank = await prisma.ongBankAccount.findMany({
     where: {
       ongId: id,
+      status: "ACTIVE",
       deletedAt: null,
     },
     select: {
@@ -100,13 +89,7 @@ export const getOngBank = async (id: string) => {
 };
 
 export const updateOngBank = async (id: string, data: IOngBank) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await findOngById(id as any);
   if (!ong) throw createError(404, "Ong not found");
@@ -128,14 +111,16 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
   const checkIfExistOngBank = await prisma.ongBankAccount.findFirst({
     where: {
       id: id,
-      bankName: data.bankName,
-      agency: data.agency,
-      account: data.account,
-      owner: data.owner,
-      ownerDocument: cpfCnpjUnmask(data.ownerDocument),
-      pixKeyType: data.pixKeyType,
-      pixKey: data.pixKey,
-      deletedAt: null,
+    },
+    select: {
+      id: true,
+      bankName: true,
+      agency: true,
+      account: true,
+      owner: true,
+      ownerDocument: true,
+      pixKeyType: true,
+      pixKey: true,
     },
   });
 
@@ -197,13 +182,7 @@ export const updateOngBank = async (id: string, data: IOngBank) => {
 };
 
 export const deleteOngBank = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await findOngById(id as any);
   if (!ong) throw createError(404, "Ong not found");
@@ -211,7 +190,7 @@ export const deleteOngBank = async (id: string) => {
   const checkIfExistOngBank = await prisma.ongBankAccount.findFirst({
     where: {
       id: id,
-      deletedAt: null,
+      status: "ACTIVE",
     },
   });
 
@@ -222,6 +201,7 @@ export const deleteOngBank = async (id: string) => {
       id: checkIfExistOngBank.id,
     },
     data: {
+      status: "INACTIVE",
       deletedAt: new Date(),
     },
   });

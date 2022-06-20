@@ -6,7 +6,15 @@ import {
 } from "js-essentials-functions";
 
 import { prisma } from "@/database/prismaClient";
-import { IUser, IUserUpdate } from "../types/user.types";
+import {
+  verifyName,
+  verifyDocument,
+  verifyGeneralText,
+  verifyEmail,
+  verifyPhoneNumber,
+  verifyUUID,
+} from "@/utils/validators";
+import { IUser, IUserUpdate } from "@/api/types/user.types";
 import { createToken } from "@/utils/jwt";
 import createError from "http-errors";
 
@@ -50,40 +58,19 @@ export const createUser = async (data: IUser) => {
     throw createError(400, "Missing required fields");
   }
 
-  // TODO: Create function to check data for validations (email, password, address, etc)
+  if (!verifyName(data.firstName) || !verifyName(data.lastName))
+    throw createError(400, "Invalid name or last name");
 
-  if (
-    data.firstName.length < 3 ||
-    data.firstName.length > 20 ||
-    data.lastName.length < 3 ||
-    data.lastName.length > 20
-  ) {
-    throw createError(
-      400,
-      "First and last name must be at least 3 characters and at most 20 characters"
-    );
-  }
+  if (!verifyDocument(data.document, 14, "donation"))
+    throw createError(400, "Invalid document");
 
-  if (
-    !data.email.includes("@") ||
-    !data.email.includes(".") ||
-    data.email.length < 5 ||
-    data.email.length > 50
-    // !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i)
-  ) {
-    throw createError(400, "Email must be valid");
-  }
+  if (verifyEmail(data.email)) throw createError(400, "Invalid email");
 
-  if (data.password.length < 8 || data.password.length > 20) {
-    throw createError(
-      400,
-      "Password must be at least 8 characters and less than 20 characters"
-    );
-  }
+  if (!verifyGeneralText(data.password, 8, 20))
+    throw createError(400, "Invalid password");
 
-  if (telephoneUnmask(data.telephone).length !== 11) {
-    throw createError(400, "Telephone must be 11 characters long");
-  }
+  if (!verifyPhoneNumber(data.telephone))
+    throw createError(400, "Invalid telephone");
 
   const verifyIfUserExists = await prisma.user.findFirst({
     where: {
@@ -149,6 +136,9 @@ export const loginUser = async ({
   document: string;
   password: string;
 }) => {
+  if (!verifyDocument(document, 14, "donation"))
+    throw createError(400, "Invalid document");
+
   const documentUnmasked = cpfCnpjUnmask(document || "");
   if (!documentUnmasked) throw createError(400, "Document is invalid");
 
@@ -230,13 +220,7 @@ export const findAllUsers = async () => {
 };
 
 export const findUserById = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const user = await prisma.user.findFirst({
     where: {
@@ -275,13 +259,7 @@ export const findUserById = async (id: string) => {
 };
 
 export const updateUser = async (id: string, data: IUserUpdate) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const user = await prisma.user.findUnique({
     where: {
@@ -407,13 +385,7 @@ export const updateUser = async (id: string, data: IUserUpdate) => {
 };
 
 export const deleteUser = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const user = await prisma.user.findUnique({
     where: {
@@ -429,7 +401,10 @@ export const deleteUser = async (id: string) => {
   if (!user) throw createError(404, "User not found");
 
   if (user.status === "INACTIVE")
-    throw createError(400, "User already deleted");
+    throw createError(
+      400,
+      `User ${user.firstName} ${user.lastName} already deleted`
+    );
 
   await prisma.user.update({
     where: {
@@ -437,6 +412,7 @@ export const deleteUser = async (id: string) => {
     },
     data: {
       status: "INACTIVE",
+      deletedAt: new Date(),
     },
   });
 

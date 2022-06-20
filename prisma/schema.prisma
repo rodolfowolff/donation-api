@@ -130,6 +130,7 @@ model OngBankAccount {
   ownerDocument String    @db.VarChar(14)
   pixKeyType    String    @db.VarChar(50)
   pixKey        String    @db.VarChar(50)
+  status        Status    @default(ACTIVE)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?

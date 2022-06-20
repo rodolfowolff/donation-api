@@ -7,12 +7,22 @@ import {
 import createError from "http-errors";
 
 import { prisma } from "@/database/prismaClient";
+import {
+  verifyDocument,
+  verifyGeneralText,
+  verifyEmail,
+  verifyPhoneNumber,
+  verifyUUID,
+} from "@/utils/validators";
 import { createToken } from "@/utils/jwt";
 import { IOng, IOngUpdate } from "../types/ong.types";
 
 export const checkIfExistOngByDocument = async (document: string) => {
+  if (!verifyDocument(document, 17, "ong"))
+    throw createError(400, "Invalid document");
+
   const documentUnmasked = cpfCnpjUnmask(document);
-  if (!documentUnmasked) throw createError(400, "Invalid document");
+  if (!documentUnmasked) throw createError(400, "Invalid document format");
 
   const ongExist = await prisma.ong.findFirst({
     where: {
@@ -52,42 +62,20 @@ export const createOng = async (data: IOng) => {
       "Missing required fields (name, email, password, document, telephone, description)"
     );
   }
-  // TODO: Create function to check data for validations (email, password, address, etc)
 
-  if (data.name.length < 3 || data.name.length > 80) {
-    throw createError(
-      400,
-      "Name must be at least 3 characters and at most 80 characters"
-    );
-  }
+  if (!verifyGeneralText(data.name, 3, 50))
+    throw createError(400, "Invalid name");
 
-  if (
-    !data.email.includes("@") ||
-    !data.email.includes(".") ||
-    data.email.length < 5 ||
-    data.email.length > 50 ||
-    !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i)
-  ) {
-    throw createError(
-      400,
-      "Email must be valid and at least 5 characters and at most 50 characters"
-    );
-  }
+  if (!verifyEmail(data.email)) throw createError(400, "Invalid email");
 
-  if (data.password.length < 8 || data.password.length > 20) {
-    throw createError(
-      400,
-      "Password must be at least 8 characters and less than 20 characters"
-    );
-  }
+  if (!verifyGeneralText(data.password, 8, 20))
+    throw createError(400, "Invalid password");
 
-  if (cpfCnpjUnmask(data.document).length !== 14) {
-    throw createError(400, "Cnpj must be 14 characters long");
-  }
+  if (!verifyDocument(data.document, 17, "ong"))
+    throw createError(400, "Invalid document");
 
-  if (telephoneUnmask(data.telephone).length !== 11) {
-    throw createError(400, "Telephone must be 11 characters long");
-  }
+  if (!verifyPhoneNumber(data.telephone))
+    throw createError(400, "Invalid telephone");
 
   if (data.address.state.length !== 2) {
     throw createError(
@@ -276,13 +264,7 @@ export const findAllOngs = async (name?: string) => {
 };
 
 export const findOngById = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findFirst({
     where: {
@@ -391,13 +373,7 @@ export const findOngByDistance = async ({
 };
 
 export const updateOng = async (id: string, data: IOngUpdate) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {
@@ -529,13 +505,7 @@ export const updateOng = async (id: string, data: IOngUpdate) => {
 };
 
 export const deleteOng = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const ong = await prisma.ong.findUnique({
     where: {
@@ -557,6 +527,7 @@ export const deleteOng = async (id: string) => {
     },
     data: {
       status: "INACTIVE",
+      deletedAt: new Date(),
     },
   });
 

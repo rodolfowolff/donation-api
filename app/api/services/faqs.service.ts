@@ -1,6 +1,7 @@
 import createError from "http-errors";
 import { IFaq } from "../types/faq.type";
 import { prisma } from "@/database/prismaClient";
+import { verifyUUID } from "@/utils/validators";
 
 export const createFaq = async (data: IFaq) => {
   if (!data.question || !data.answer)
@@ -46,16 +47,10 @@ export const getAllFaqs = async (type: IFaq["type"]) => {
 };
 
 export const updateFaq = async (id: string, data: IFaq) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
-
   if (!data.question || !data.answer)
     throw createError(400, "Id, quertion and answer is required");
+
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const checkIfExistFaq = await prisma.faq.findFirst({
     where: {
@@ -97,13 +92,7 @@ export const updateFaq = async (id: string, data: IFaq) => {
 };
 
 export const deleteFaq = async (id: string) => {
-  if (
-    id.length !== 36 ||
-    !id.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    )
-  )
-    throw createError(400, "Invalid id");
+  if (!verifyUUID(id)) throw createError(400, "Invalid id");
 
   const checkIfExistFaq = await prisma.faq.findFirst({
     where: {
