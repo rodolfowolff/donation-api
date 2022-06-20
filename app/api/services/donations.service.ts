@@ -66,7 +66,6 @@ export const createDonation = async (user: string, data: IDonation) => {
 };
 
 export const getUserDonation = async (user: string) => {
-  console.log("user", user);
   if (
     user.length !== 36 ||
     !user.match(
