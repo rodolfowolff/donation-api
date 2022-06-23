@@ -83,6 +83,14 @@ export const createUser = async (data: IUser) => {
         },
       ],
     },
+    select: {
+      userPersonalData: {
+        select: {
+          email: true,
+          telephone: true,
+        },
+      },
+    },
   });
 
   if (verifyIfUserExists) throw createError(400, "User already exists");
@@ -124,7 +132,12 @@ export const createUser = async (data: IUser) => {
   const token = createToken({ id: createUser.id });
 
   return {
-    user: createUser.firstName,
+    user: {
+      firstName: createUser.firstName,
+      lastName: createUser.lastName,
+      telephone: telephoneUnmasked,
+      email: data.email,
+    },
     token,
   };
 };
@@ -136,7 +149,7 @@ export const loginUser = async ({
   document: string;
   password: string;
 }) => {
-  if (!verifyDocument(document, 14, "donation"))
+  if (!verifyDocument(document, 11, "donation"))
     throw createError(400, "Invalid document");
 
   const documentUnmasked = cpfCnpjUnmask(document || "");
@@ -155,6 +168,7 @@ export const loginUser = async ({
       userPersonalData: {
         select: {
           email: true,
+          telephone: true,
         },
       },
     },
@@ -182,6 +196,7 @@ export const loginUser = async ({
       firstName: user.firstName,
       userPersonalData: {
         email: user?.userPersonalData?.email,
+        telephone: user?.userPersonalData?.telephone,
       },
     },
     token,

@@ -144,7 +144,11 @@ export const createOng = async (data: IOng) => {
   const token = createToken({ id: createOng.id });
 
   return {
-    ong: createOng.name,
+    ong: {
+      name: createOng.name,
+      email: data.email,
+      telephone: telephoneUnmasked,
+    },
     token,
   };
 };
@@ -173,6 +177,7 @@ export const loginOng = async ({
       ongPersonalData: {
         select: {
           email: true,
+          telephone: true,
         },
       },
     },
@@ -201,6 +206,7 @@ export const loginOng = async ({
     },
     ongPersonalData: {
       email: ong?.ongPersonalData?.email,
+      telephone: ong?.ongPersonalData?.telephone,
     },
     token,
   };

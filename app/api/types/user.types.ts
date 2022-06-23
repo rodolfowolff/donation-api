@@ -31,6 +31,8 @@ export interface IUser {
 }
 
 export interface IUserUpdate {
+  firstName?: string | null;
+  lastName?: string | null;
   email?: string | null;
   telephone?: string | null;
   address?: IUserAddressUpdate | null;
