@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "./dist",
     "strict": true,
     "lib": ["esnext"],
     "esModuleInterop": true,
@@ -14,9 +14,9 @@
     "typeRoots": ["*./node_modules/@types", "./app/@types"],
     "allowSyntheticDefaultImports": true,
     "paths": {
-      "@/*": ["app/*"],
-    },
+      "@/*": ["app/*"]
+    }
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
